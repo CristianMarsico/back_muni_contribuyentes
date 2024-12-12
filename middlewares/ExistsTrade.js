@@ -35,7 +35,7 @@ exports.ExistsTrade = (req, res, next) => {
             const codigosExistentes = results.rows.map(row => row.cod_comercio);
             const codigosConcatenados = codigosExistentes.join(', '); // Unimos los códigos en una sola cadena separada por comas
             return res.status(404).json({
-                error: `Código/os de comercio/os registrado/os: ${codigosConcatenados}`
+                error: `Código/os: ${codigosConcatenados} ya registrado/os`
             });
         }
 

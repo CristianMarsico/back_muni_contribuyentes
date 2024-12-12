@@ -1,6 +1,6 @@
 "use strict";
 const {
-    register, agregarComercio, getUserWithRole, getTaxpayerWithRole
+    register, addTrade, getUserWithRole, getTaxpayerWithRole
 } = require('../models/AuthModel.js');
 
 const {
@@ -11,20 +11,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.register = async (req, res) => {
-    const { nombre, 
-        apellido, 
-        cuil, 
-        email,
-        direccion,
-        telefono, 
-        password, 
-        misComercios
-         } = req.body;
+    const { nombre, apellido, cuit, email, direccion, telefono, password, misComercios } = req.body;
 
-      
+    const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
+    
     try {
-        const id_rol = await getRoleByName('user');
-        
+        const id_rol = await getRoleByName('user');        
 
         const salt = await bcrypt.genSalt(8);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -32,20 +24,20 @@ exports.register = async (req, res) => {
         const id_contribuyente = await register(
             nombre, 
             apellido, 
-            cuil, 
+            cuitConvert,            
             email, 
             direccion,
             telefono, 
             hashedPassword, 
             false,
             id_rol[0].id_rol
-        );
+        );      
 
         if (!id_contribuyente) return res.status(404).json({ error: 'No se pudo registrar el contribuyente.' });
 
         // Agregar los comercios si existen
         if (misComercios && misComercios.length > 0) {
-            const comerciosAgregados = await agregarComercio(misComercios);
+            const comerciosAgregados = await addTrade(misComercios, id_contribuyente);
             if (!comerciosAgregados) {
                 return res.status(404).json({ error: 'Error al agregar los comercios.' });
             }
@@ -73,8 +65,8 @@ exports.loginAdmin = async (req, res) => {
 
         const token = jwt.sign(
             {
-                id_usuario: usuario.id_usuario,
-                usuario: usuario.usuario,
+                id: usuario.id_usuario,
+                nombre: usuario.usuario,
                 rol: rol,
             },
             process.env.SECRET_KEY, // Clave secreta para firmar el token
@@ -90,8 +82,8 @@ exports.loginAdmin = async (req, res) => {
         });
 
         return res.status(200).json({
-            id_usuario: usuario.id_usuario,
-            nombre_usuario: usuario.usuario,
+            id: usuario.id_usuario,
+            nombre: usuario.usuario,
             rol: rol,
             token
         });
@@ -103,25 +95,29 @@ exports.loginAdmin = async (req, res) => {
 
 exports.loginTaxpayer = async (req, res) => {
 
-    const { username, password } = req.body;
+    const { cuit, password } = req.body;    
+    const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
+
     try {
-        const resp = await getTaxpayerWithRole(username);
+        const resp = await getTaxpayerWithRole(cuitConvert);
 
         // Verificar si se encontró el usuario
-        if (resp.length === 0) return res.status(404).json({ error: "CUIL o contraseña incorrectos" });
+        if (resp.length === 0) return res.status(404).json({ error: "CUIT o contraseña incorrectos" });
 
         const usuario = resp[0]; // Primer resultado de la consulta
         const rol = usuario.rol; // El nombre del rol ya está en el resultado
 
         const isPasswordCorrect = await bcrypt.compare(password, usuario.password);
-        if (!isPasswordCorrect) return res.status(404).json({ error: "CUIL o contraseña incorrectos" });
+        if (!isPasswordCorrect) return res.status(404).json({ error: "CUIT o contraseña incorrectos" });
 
         const token = jwt.sign(
             {
-                id_usuario: usuario.id,               
-                apellido: usuario.apellido,                             
-                cuil: usuario.cuil,
+                id: usuario.id_contribuyente,
+                nombre: usuario.nombre,
+                apellido: usuario.apellido,
+                cuit: usuario.cuit,
                 rol: rol,
+                estado: usuario.estado,
             },
             process.env.SECRET_KEY, // Clave secreta para firmar el token
             { expiresIn: '1d' } // El token expirará en 1 día
@@ -133,13 +129,13 @@ exports.loginTaxpayer = async (req, res) => {
             secure: process.env.MODO !== 'developer', // Solo enviar en HTTPS fuera de desarrollo
             sameSite: process.env.MODO !== 'developer' ? 'None' : 'Lax', // Permitir cookies en peticiones cruzadas en producción, // Previene ataques CSRF
             maxAge: 24 * 60 * 60 * 1000,
-        });       
+        });
 
         return res.status(200).json({
-            id: usuario.id,
+            id: usuario.id_contribuyente,
             nombre: usuario.nombre,
             apellido: usuario.apellido,
-            cuil: usuario.cuil,
+            cuit: usuario.cuit,
             rol: rol,
             estado: usuario.estado,
             token
@@ -159,6 +155,11 @@ exports.logout = (req, res) => {
     res.status(200).json({ message: "Sesión cerrada exitosamente" });
 };
 
-exports.getProtectedData = (req, res) => {
+exports.getProtectedData = (req, res) => {    
     res.status(200).json({ user: req.user });
 };
+
+function convertStrigToNumber(text) {
+    const number = BigInt(text); // Usamos BigInt
+    return number; // Salida: 20123456785n
+}

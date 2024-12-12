@@ -42,6 +42,8 @@ app.use(express.urlencoded({ extended: true }));
 // Rutas
 app.use('/api', require('./routes/AuthRoutes.js'));
 app.use('/api', require('./routes/TaxtayerRoutes.js'));
+app.use('/api', require('./routes/TradeRoutes.js'));
+app.use('/api', require('./routes/DdjjRoutes.js'));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

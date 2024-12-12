@@ -16,8 +16,8 @@ exports.editActive = async (id) => {
     const query = `
         UPDATE CONTRIBUYENTE
         SET estado = true
-        WHERE id = $1
-        RETURNING id;
+        WHERE id_contribuyente = $1
+        RETURNING id_contribuyente;
     `;
     const values = [id];
 
