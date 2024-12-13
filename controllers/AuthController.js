@@ -10,7 +10,7 @@ const {
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, io) => {
     const { nombre, apellido, cuit, email, direccion, telefono, password, misComercios } = req.body;
 
     const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
@@ -42,6 +42,7 @@ exports.register = async (req, res) => {
                 return res.status(404).json({ error: 'Error al agregar los comercios.' });
             }
         }
+        io.emit('nuevo-contribuyente', { nombre });
         return res.status(200).json({ message: 'Contribuyente registrado y comercios agregados exitosamente.' });
     } catch (error) {
         console.error('Error en el servidor:', error);
