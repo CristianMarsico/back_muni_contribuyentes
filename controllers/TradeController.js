@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getAll, get
+    getAll, get, activeState
 } = require('../models/TradeModel.js');
 
 exports.getAll = async (req, res) => {
@@ -24,3 +24,18 @@ exports.get = async (req, res) => {
         return res.status(500).json({ error: "Error de servidor" });
     }
 };
+
+
+exports.activeState = async (req, res, io) => {
+    const { id } = req.params; 
+    if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });
+    try {
+        const updatedActive = await activeState(id);
+        if (!updatedActive) return res.status(404).json({ error: "El estado no se pudo cambiar" });
+        io.emit('comercio-nuevo', { id });
+        return res.status(200).json({ message: "El comercio ha sido dado de alta", data: updatedActive });
+    } catch (error) {
+        res.status(500).json({ error: "Error de servidor" });
+    }
+};
+

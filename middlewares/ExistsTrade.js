@@ -26,8 +26,7 @@ exports.ExistsTrade = (req, res, next) => {
     const sql = `SELECT cod_comercio FROM COMERCIO WHERE cod_comercio = ANY($1)`;
 
     conn.query(sql, [codigos], (err, results) => {
-        if (err) {
-            console.error('Error en la consulta SQL:', err);
+        if (err) {           
             return res.status(500).json({ error: 'Error de servidor' });
         }
 

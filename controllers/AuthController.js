@@ -11,44 +11,50 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.register = async (req, res, io) => {
-    const { nombre, apellido, cuit, email, direccion, telefono, password, misComercios } = req.body;
+    const { nombre, apellido, cuit, email, direccion, telefono, password, razon_social, misComercios } = req.body;
 
     const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
-    
+
     try {
-        const id_rol = await getRoleByName('user');        
+        const id_rol = await getRoleByName('user');
 
         const salt = await bcrypt.genSalt(8);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const id_contribuyente = await register(
-            nombre, 
-            apellido, 
-            cuitConvert,            
-            email, 
+        // Ahora la función devuelve todos los datos del contribuyente
+        const nuevoContribuyente = await register(
+            nombre,
+            apellido,
+            cuitConvert,
+            email,
             direccion,
-            telefono, 
-            hashedPassword, 
-            false,
+            telefono,
+            hashedPassword,
+            razon_social,
+            false, // estado inicial del contribuyente (en espera)
             id_rol[0].id_rol
-        );      
+        );
 
-        if (!id_contribuyente) return res.status(404).json({ error: 'No se pudo registrar el contribuyente.' });
+        if (!nuevoContribuyente) return res.status(404).json({ error: 'No se pudo registrar el contribuyente.' });
 
         // Agregar los comercios si existen
         if (misComercios && misComercios.length > 0) {
-            const comerciosAgregados = await addTrade(misComercios, id_contribuyente);
+            const comerciosAgregados = await addTrade(misComercios, nuevoContribuyente.id_contribuyente);
             if (!comerciosAgregados) {
                 return res.status(404).json({ error: 'Error al agregar los comercios.' });
             }
         }
-        io.emit('nuevo-contribuyente', { nombre });
-        return res.status(200).json({ message: 'Contribuyente registrado y comercios agregados exitosamente.' });
+
+        // Emitir el nuevo contribuyente con todos sus datos
+        io.emit('nuevo-contribuyente', nuevoContribuyente);
+
+        return res.status(200).json({ message: 'Contribuyente registrado y comercios agregados exitosamente.', data: nuevoContribuyente });
     } catch (error) {
         console.error('Error en el servidor:', error);
         return res.status(500).json({ error: 'Error en el servidor' });
     }
 };
+
 
 exports.loginAdmin = async (req, res) => {
     const { username, password } = req.body;

@@ -6,6 +6,7 @@ const cors = require('cors');
 
 const http = require('http'); // Añadir http
 const socketIo = require('socket.io'); // Importar socket.io
+const { isObject } = require('util');
 
 const app = express();
 
@@ -55,8 +56,8 @@ const io = socketIo(server, {
 
 // Pasamos el objeto `io` a las rutas para su uso
 app.use('/api', require('./routes/AuthRoutes.js')(io));  // Pasa `io` a las rutas
-app.use('/api', require('./routes/TaxtayerRoutes.js'));
-app.use('/api', require('./routes/TradeRoutes.js'));
+app.use('/api', require('./routes/TaxtayerRoutes.js')(io));
+app.use('/api', require('./routes/TradeRoutes.js')(io));
 app.use('/api', require('./routes/DdjjRoutes.js'));
 
 
