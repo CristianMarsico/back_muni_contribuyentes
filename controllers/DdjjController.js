@@ -18,14 +18,10 @@ exports.getByYearTradeMonth = async (req, res) => {
 
 
 exports.addDdjj = async (req, res) => {
-    const { id_contribuyente, id_comercio, monto, descripcion } = req.body;
-
-    console.log(id_contribuyente, id_comercio, monto, descripcion)
+    const { id_contribuyente, id_comercio, monto, descripcion } = req.body;   
     try {       
         const nuevaDdjj = await addDdjj(id_contribuyente, id_comercio, monto, descripcion);
-
         if (!nuevaDdjj) return res.status(404).json({ error: 'No se pudo agregar la DDJJ.' });
-
         return res.status(200).json({ message: 'DDJJ registrada exitosamente.', data: nuevaDdjj });
     } catch (error) {       
         return res.status(500).json({ error: 'Error en el servidor' });

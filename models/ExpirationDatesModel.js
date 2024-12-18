@@ -11,3 +11,16 @@ exports.getAll = () => {
         });
     });
 };
+
+exports.updateExipirationDate = async (id, date) => {
+    const query = `
+        UPDATE fecha_vencimiento
+        SET fecha_vencimiento = $1
+        WHERE id_vencimiento = $2
+        RETURNING id_vencimiento, fecha_vencimiento;
+    `;
+    const values = [date, id];
+
+    const result = await conn.query(query, values);
+    return result.rows[0];
+};

@@ -10,8 +10,7 @@ exports.register = async (nombre, apellido, cuit, email, direccion, telefono, pa
     `;
         const result = await conn.query(query, [nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol]);
         return result.rows[0]; // Devuelve todos los datos del contribuyente
-    } catch (error) {
-        console.error('Error al registrar contribuyente:', error);
+    } catch (error) {      
         throw new Error('Error al registrar contribuyente.');
     }
 };
@@ -28,12 +27,10 @@ exports.addTrade = async (misComercios, id_contribuyente) => {
             await conn.query(query, [codigo, nombre, direccion,false, id_contribuyente]);
         }
         return true; // Comercios agregados correctamente
-    } catch (error) {
-        console.error('Error al agregar los comercios:', error);
+    } catch (error) {        
         return false;
     }
 };
-
 
 exports.getUserWithRole = async (usuario) => {    
     return new Promise((resolve, reject) => {

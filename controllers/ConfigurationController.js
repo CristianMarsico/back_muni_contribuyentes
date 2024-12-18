@@ -13,10 +13,13 @@ exports.getAll = async (req, res) => {
     }
 };
 
-exports.updateConfiguration = async (req, res) => {
+exports.updateConfiguration = async (req, res, io) => {
     const { id } = req.params;
     const { fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual, tasa_default } = req.body;
    
+    if (fecha_limite_ddjj > 31)
+        return res.status(404).json({ error: 'La fecha no debe superar el dia 31' });
+
     // Verificar que los campos sean válidos
     if (!fecha_limite_ddjj || !monto_ddjj_defecto || !tasa_actual || !tasa_default) {
         return res.status(404).json({ error: 'Todos los campos son obligatorios' });
@@ -34,6 +37,7 @@ exports.updateConfiguration = async (req, res) => {
 
         // Si la actualización fue exitosa
         if (result.success) {
+            io.emit('nuevos-valores', { result });
             return res.status(200).json({ message: 'Configuración actualizada correctamente' });
         } else {
             return res.status(500).json({ error: 'Error al actualizar la configuración' });

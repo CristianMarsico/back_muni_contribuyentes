@@ -23,12 +23,10 @@ exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, 
         WHERE id_configuracion = $5;
     `;
     const values = [fecha_limite_ddjj, tasa_actual,monto_ddjj_defecto, tasa_default, id];
-
     try {
         await conn.query(query, values);
         return { success: true };
-    } catch (err) {
-        console.error('Error al actualizar configuración:', err);
+    } catch (err) {       
         throw new Error('Error en la base de datos');
     }
 };

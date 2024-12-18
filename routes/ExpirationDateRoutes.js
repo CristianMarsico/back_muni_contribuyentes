@@ -3,8 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
-const { getAll } = require("../controllers/ExpirationDatesController.js");
+const { getAll, updateExipirationDate } = require("../controllers/ExpirationDatesController.js");
 
-router.get("/expirationDates", getAll);
-
-module.exports = router;
+module.exports = (io) => {
+    router.get("/expirationDates", getAll);
+    router.put("/expirationDates/:id/:date", (req, res) => updateExipirationDate(req, res, io));
+    return router;
+};

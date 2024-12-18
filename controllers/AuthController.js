@@ -49,8 +49,7 @@ exports.register = async (req, res, io) => {
         io.emit('nuevo-contribuyente', nuevoContribuyente);
 
         return res.status(200).json({ message: 'Contribuyente registrado y comercios agregados exitosamente.', data: nuevoContribuyente });
-    } catch (error) {
-        console.error('Error en el servidor:', error);
+    } catch (error) {       
         return res.status(500).json({ error: 'Error en el servidor' });
     }
 };
