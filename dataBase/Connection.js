@@ -60,12 +60,16 @@ const initializeUserDefault = async () => {
 const initializeFechasDefault = async () => {
     try {
         // Verificar si el usuario ya existe
+        console.log("Verificando existencia de fechas...");
         const exists = await conn.query("select 1 from fecha_vencimiento");
+        console.log(`Existencia verificada, filas: ${exists.rowCount}`);
 
         if (exists.rowCount > 0) {
             console.log(`Las fechas ya fueron cargadas por defecto`);
             return;
         }
+
+        console.log("Ejecutando consulta para insertar fechas...");
         // Crear fechas por defecto
         const sql = `insert into fecha_vencimiento (id_vencimiento, nro_cuota, fecha_vencimiento)
                                                     values
@@ -81,8 +85,8 @@ const initializeFechasDefault = async () => {
                                                         (10, 10, to_date('2025-11-28', 'yyyy-mm-dd')),
                                                         (11, 11, to_date('2025-12-30', 'yyyy-mm-dd')),
                                                         (12, 12, to_date('2026-01-30', 'yyyy-mm-dd'))`;
+        console.log("Fechas por defecto creadas");
         await conn.query(sql);
-        console.log(`Fechas por defecto creadas`);
     } catch (error) {
         console.error("Error al inicializar las fechas por defecto:", error.message);
     }
