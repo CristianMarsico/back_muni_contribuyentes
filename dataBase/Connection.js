@@ -113,10 +113,33 @@ const initializeDataConfigDefault = async () => {
 };
 
 const initializeValues = async () => {
-    await inizializeRolesDefault();  // Inicializar roles
-    await initializeUserDefault();// Inicializar usuario por defecto
-    await initializeFechasDefault();// Inicializar fechas por defecto
-    await initializeDataConfigDefault();
+    try {
+        console.log("Inicializando roles...");
+        await inizializeRolesDefault();
+    } catch (error) {
+        console.error("Error al inicializar roles:", error.message);
+    }
+
+    try {
+        console.log("Inicializando usuario...");
+        await initializeUserDefault();
+    } catch (error) {
+        console.error("Error al inicializar usuario:", error.message);
+    }
+
+    try {
+        console.log("Inicializando fechas...");
+        await initializeFechasDefault();
+    } catch (error) {
+        console.error("Error al inicializar fechas:", error.message);
+    }
+
+    try {
+        console.log("Inicializando configuraciones...");
+        await initializeDataConfigDefault();
+    } catch (error) {
+        console.error("Error al inicializar configuraciones:", error.message);
+    }
 };
 initializeValues();
 module.exports = conn;
