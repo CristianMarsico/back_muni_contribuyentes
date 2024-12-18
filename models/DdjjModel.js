@@ -18,3 +18,19 @@ exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
         });
     });
 };
+
+
+exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion) => {
+    try {
+        const query = `
+      INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion)
+      VALUES ($1, $2, CURRENT_DATE, $3, $4)
+      RETURNING id_contribuyente, id_comercio, fecha, monto, descripcion
+    `;
+        const result = await conn.query(query, [id_contribuyente, id_comercio, monto, descripcion]);
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error al cargar DDJJ:', error);
+        throw new Error('Error al registrar la DDJJ.');
+    }
+};

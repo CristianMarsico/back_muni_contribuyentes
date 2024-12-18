@@ -59,6 +59,10 @@ app.use('/api', require('./routes/AuthRoutes.js')(io));  // Pasa `io` a las ruta
 app.use('/api', require('./routes/TaxtayerRoutes.js')(io));
 app.use('/api', require('./routes/TradeRoutes.js')(io));
 app.use('/api', require('./routes/DdjjRoutes.js'));
+//para las fechas de vencimientos
+app.use('/api', require('./routes/ExpirationDateRoutes.js'));
+//para las configuraciones generales
+app.use('/api', require('./routes/ConfigurationRoutes'));
 
 
 // Selección del puerto según el modo
