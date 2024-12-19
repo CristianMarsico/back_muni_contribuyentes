@@ -54,7 +54,8 @@ const io = socketIo(server, {
     }
 });
 
-// Pasamos el objeto `io` a las rutas para su uso
+// Configura las rutas y las asocia con el prefijo '/api'.
+// También se pasa el objeto 'io' para emitir eventos en tiempo real usando Socket.io.
 app.use('/api', require('./routes/AuthRoutes.js')(io));  // Pasa `io` a las rutas
 app.use('/api', require('./routes/TaxtayerRoutes.js')(io));
 app.use('/api', require('./routes/TradeRoutes.js')(io));

@@ -3,6 +3,14 @@ const {
     getAll, get, activeState
 } = require('../models/TradeModel.js');
 
+/**
+ * Obtiene todos los comercios.
+ * @function
+ * @async
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>} Respuesta con los datos de los comercios o un mensaje de error.
+ */
 exports.getAll = async (req, res) => {
     try {
         let response = await getAll();
@@ -14,6 +22,14 @@ exports.getAll = async (req, res) => {
     }
 };
 
+/**
+ * Obtiene un comercio específico asociado a un contribuyente.
+ * @function
+ * @async
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ * @returns {Promise<void>} Respuesta con los datos del comercio o un mensaje de error.
+ */
 exports.get = async (req, res) => {
     const {id} = req.params; 
     try {
@@ -25,7 +41,15 @@ exports.get = async (req, res) => {
     }
 };
 
-
+/**
+ * Actualiza el estado de un comercio y emite un evento.
+ * @function
+ * @async
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ * @param {object} io - Instancia de Socket.io para emitir eventos.
+ * @returns {Promise<void>} Respuesta con el resultado de la actualización o un mensaje de error.
+ */
 exports.activeState = async (req, res, io) => {
     const { id } = req.params; 
     if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });

@@ -3,6 +3,13 @@ const {
     getAll, updateExipirationDate
 } = require('../models/ExpirationDatesModel.js');
 
+/**
+ * Obtiene todas las fechas de vencimiento desde la base de datos.
+ * Si se encuentran registros, se devuelven en formato JSON.
+ * 
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.getAll = async (req, res) => {
     try {
         let response = await getAll();
@@ -15,6 +22,13 @@ exports.getAll = async (req, res) => {
     }
 };
 
+/**
+ * Actualiza la fecha de vencimiento de un registro específico y emite un evento de actualización.
+ * 
+ * @param {Object} req - La solicitud HTTP, que contiene los parámetros 'id' y 'date'.
+ * @param {Object} res - La respuesta HTTP.
+ * @param {Object} io - El objeto de Socket.io para emitir el evento de actualización.
+ */
 exports.updateExipirationDate = async (req, res, io) => {
     const { id, date } = req.params;   
     if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });

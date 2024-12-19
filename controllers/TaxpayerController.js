@@ -3,6 +3,15 @@ const {
     getAll, editActive, getWithTrade
 } = require('../models/TaxpayerModel.js');
 
+/**
+ * Controlador para obtener todos los contribuyentes.
+ *
+ * @function getAll
+ * @param {Object} req - Objeto de solicitud HTTP.
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @throws {Error} 404 - Si no hay contribuyentes en la base de datos.
+ * @throws {Error} 500 - Si ocurre un error en el servidor.
+ */
 exports.getAll = async (req, res) => {
     try {
         let response = await getAll();
@@ -15,6 +24,15 @@ exports.getAll = async (req, res) => {
     }
 };
 
+/**
+ * Controlador para obtener un contribuyente con sus comercios.
+ *
+ * @function getWithTrade
+ * @param {Object} req - Objeto de solicitud HTTP, debe contener el parámetro `id`.
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @throws {Error} 404 - Si no hay comercios asociados al contribuyente.
+ * @throws {Error} 500 - Si ocurre un error en el servidor.
+ */
 exports.getWithTrade = async (req, res) => {
     const { id } = req.params;
     try {
@@ -26,6 +44,18 @@ exports.getWithTrade = async (req, res) => {
     }
 };
 
+
+/**
+ * Controlador para actualizar el estado de un contribuyente.
+ *
+ * @function editActive
+ * @param {Object} req - Objeto de solicitud HTTP, debe contener el parámetro `id`.
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @param {Object} io - Objeto de Socket.io para emitir eventos en tiempo real.
+ * @throws {Error} 400 - Si faltan datos necesarios para la operación.
+ * @throws {Error} 404 - Si no se pudo actualizar el estado del contribuyente.
+ * @throws {Error} 500 - Si ocurre un error en el servidor.
+ */
 exports.editActive = async (req, res, io) => {
     const { id } = req.params;   
     if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });

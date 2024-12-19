@@ -1,6 +1,13 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-
+/**
+ * Conexión a la base de datos utilizando la librería `pg`.
+ * 
+ * Esta conexión usa las variables de entorno definidas en `process.env` para configurar la conexión
+ * con la base de datos de PostgreSQL, incluyendo la configuración de SSL para producción.
+ * 
+ * @const {Pool} conn - Objeto de conexión a la base de datos PostgreSQL.
+ */
 const conn = new Pool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -9,7 +16,16 @@ const conn = new Pool({
     database: process.env.DB_NAME,
     ssl: process.env.MODO === 'produccion'
 });
-// Función para crear roles por defecto
+
+/**
+ * Función para inicializar los roles por defecto en la base de datos.
+ * 
+ * Esta función verifica si los roles `admin` y `user` existen en la base de datos. Si no existen, los crea.
+ * 
+ * @async
+ * @function inizializeRolesDefault
+ * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
+ */
 const inizializeRolesDefault = async () => {
     let rol = ['admin', 'user'];
     try {
@@ -23,7 +39,16 @@ const inizializeRolesDefault = async () => {
     }
 }
 
-// Función para crear el usuario por defecto
+/**
+ * Función para inicializar un usuario por defecto en la base de datos.
+ * 
+ * Esta función crea un usuario por defecto con el nombre `admin` y la contraseña `admin`, encriptada con bcrypt.
+ * Asigna al usuario el rol `admin`, y si el usuario ya existe, lo notifica.
+ * 
+ * @async
+ * @function initializeUserDefault
+ * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL o al encriptar la contraseña.
+ */
 const initializeUserDefault = async () => {
     const defaultUsername = "admin";
     const defaultPassword = "admin";
@@ -56,7 +81,16 @@ const initializeUserDefault = async () => {
     }
 };
 
-//  Función iniciar fechas por defecto
+/**
+ * Función para inicializar fechas de vencimiento por defecto en la base de datos.
+ * 
+ * Esta función verifica si ya existen fechas en la tabla `fecha_vencimiento`. Si no existen, inserta un conjunto
+ * de fechas predeterminadas con el formato `yyyy-mm-dd`.
+ * 
+ * @async
+ * @function initializeFechasDefault
+ * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
+ */
 const initializeFechasDefault = async () => {
     try {
         // Verificar si el usuario ya existe
@@ -88,7 +122,16 @@ const initializeFechasDefault = async () => {
     }
 };
 
-//  Función iniciar configuraciones por defecto
+/**
+ * Función para inicializar configuraciones generales por defecto en la base de datos.
+ * 
+ * Esta función verifica si ya existen configuraciones en la tabla `configuracion`. Si no existen, inserta
+ * una configuración predeterminada para `fecha_limite_ddjj`, `tasa_actual`, `monto_defecto`, y `tasa_default`.
+ * 
+ * @async
+ * @function initializeDataConfigDefault
+ * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
+ */
 const initializeDataConfigDefault = async () => {
     try {
         // Verificar si el usuario ya existe
@@ -108,6 +151,14 @@ const initializeDataConfigDefault = async () => {
     }
 };
 
+/**
+ * Función para inicializar todos los valores por defecto en la base de datos.
+ * 
+ * Esta función llama a todas las funciones de inicialización anteriores para crear roles, usuarios, fechas y configuraciones por defecto.
+ * 
+ * @async
+ * @function initializeValues
+ */
 const initializeValues = async () => {
     await inizializeRolesDefault();  // Inicializar roles
     await initializeUserDefault();// Inicializar usuario por defecto

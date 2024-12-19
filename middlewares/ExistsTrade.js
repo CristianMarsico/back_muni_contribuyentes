@@ -22,22 +22,33 @@ exports.ExistsTrade = (req, res, next) => {
     // Extraer los códigos de comercio de la lista de objetos
     const codigos = misComercios.map(comercio => comercio.codigo);
 
-    // Consulta para verificar si alguno de los códigos ya existe
+    // Verificar si hay códigos duplicados en la lista enviada
+    const codigosDuplicados = codigos.filter((codigo, index) => codigos.indexOf(codigo) !== index);
+
+    if (codigosDuplicados.length > 0) {
+        const codigosConcatenados = [...new Set(codigosDuplicados)].join(', ');
+        return res.status(400).json({
+            error: `Código de comercio repetido: ${codigosConcatenados}. Quitelo de la lista.`
+        });
+    }
+
+    // Consulta para verificar si alguno de los códigos ya existe en la base de datos
     const sql = `SELECT cod_comercio FROM COMERCIO WHERE cod_comercio = ANY($1)`;
 
     conn.query(sql, [codigos], (err, results) => {
-        if (err) {           
+        if (err) {
             return res.status(500).json({ error: 'Error de servidor' });
         }
 
         if (results.rows.length > 0) {
             const codigosExistentes = results.rows.map(row => row.cod_comercio);
-            const codigosConcatenados = codigosExistentes.join(', '); // Unimos los códigos en una sola cadena separada por comas
-            return res.status(404).json({
-                error: `Código/os: ${codigosConcatenados} ya registrado/os`
+            const codigosConcatenados = codigosExistentes.join(', ');
+            return res.status(400).json({
+                error: `Código/os ya registrado/os en la base de datos: ${codigosConcatenados}`
             });
         }
 
+        // Pasar al siguiente middleware o controlador si no hay errores
         next();
     });
 };

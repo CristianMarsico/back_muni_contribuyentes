@@ -10,6 +10,17 @@ const {
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+/**
+ * Controlador que maneja el registro de un nuevo contribuyente.
+ * Realiza la validación de los datos, la creación del contribuyente y la asociación de comercios.
+ * 
+ * @async
+ * @function register
+ * @param {Object} req - El objeto de solicitud HTTP que contiene los datos del formulario de registro.
+ * @param {Object} res - El objeto de respuesta HTTP para enviar una respuesta al cliente.
+ * @param {Object} io - El objeto Socket.io para emitir eventos en tiempo real.
+ * @returns {Object} Respuesta HTTP con el estado de la operación.
+ */
 exports.register = async (req, res, io) => {
     const { nombre, apellido, cuit, email, direccion, telefono, password, razon_social, misComercios } = req.body;
 
@@ -54,7 +65,16 @@ exports.register = async (req, res, io) => {
     }
 };
 
-
+/**
+ * Controlador que maneja el login de un administrador.
+ * Verifica las credenciales del administrador y genera un token JWT.
+ * @function
+ * @async
+ * @param {Object} req - Objeto de solicitud que contiene el `username` y `password` del administrador.
+ * @param {Object} res - Objeto de respuesta que devuelve el estado del login.
+ * @returns {Object} - Retorna un objeto JSON con el `id`, `nombre`, `rol` y `token` si el login es exitoso.
+ * @throws {Error} - Si el usuario no existe o la contraseña es incorrecta, se retorna un error 404.
+ */
 exports.loginAdmin = async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -99,6 +119,16 @@ exports.loginAdmin = async (req, res) => {
     }
 };
 
+/**
+ * Controlador que maneja el login de un contribuyente.
+ * Verifica las credenciales del contribuyente y genera un token JWT.
+ * @function
+ * @async
+ * @param {Object} req - Objeto de solicitud que contiene el `cuit` y `password` del contribuyente.
+ * @param {Object} res - Objeto de respuesta que devuelve el estado del login.
+ * @returns {Object} - Retorna un objeto JSON con el `id`, `nombre`, `apellido`, `cuit`, `rol`, `estado` y `token` si el login es exitoso.
+ * @throws {Error} - Si el contribuyente no existe o la contraseña es incorrecta, se retorna un error 404.
+ */
 exports.loginTaxpayer = async (req, res) => {
 
     const { cuit, password } = req.body;    
@@ -152,6 +182,14 @@ exports.loginTaxpayer = async (req, res) => {
     }
 };
 
+/**
+ * Función que maneja el cierre de sesión del usuario.
+ * Elimina el token de autenticación almacenado en las cookies.
+ * @route GET /auth/logout
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta para enviar una confirmación de cierre de sesión.
+ * @returns {Object} - Un objeto JSON con un mensaje de éxito si la operación fue exitosa.
+ */
 exports.logout = (req, res) => {
     res.clearCookie("authToken", {
         httpOnly: true,
@@ -161,10 +199,29 @@ exports.logout = (req, res) => {
     res.status(200).json({ message: "Sesión cerrada exitosamente" });
 };
 
+/**
+ * Función que obtiene los datos protegidos del usuario.
+ * Solo se puede acceder a esta función si el usuario está autenticado.
+ * @route GET /auth/protected-data
+ * @param {Object} req - Objeto de solicitud que contiene los datos del usuario autenticado.
+ * @param {Object} res - Objeto de respuesta que envía los datos protegidos.
+ * @returns {Object} - Un objeto JSON con la información del usuario autenticado.
+ */
 exports.getProtectedData = (req, res) => {    
     res.status(200).json({ user: req.user });
 };
 
+
+/**
+ * Convierte una cadena de texto a un número tipo BigInt.
+ * Esto es útil para manejar números grandes que superan el límite de los números enteros regulares.
+ * @function
+ * @param {string} text - La cadena de texto que representa un número grande.
+ * @returns {BigInt} - El número convertido a tipo BigInt.
+ * @example
+ * // Entrada: "20123456785"
+ * // Salida: 20123456785n
+ */
 function convertStrigToNumber(text) {
     const number = BigInt(text); // Usamos BigInt
     return number; // Salida: 20123456785n
