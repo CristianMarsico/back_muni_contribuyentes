@@ -61,7 +61,7 @@ exports.editActive = async (req, res, io) => {
     if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });
     try {
         const updatedActive = await editActive(id);
-        if (!updatedActive) return res.status(404).json({ error: "El estado no se pudo cambiar" });
+        if (!updatedActive) return res.status(404).json({ error: "No fue posible darlo de alta" });
        
         // Emitir el estado actualizado con los datos necesarios
         io.emit("estado-actualizado", {

@@ -40,7 +40,7 @@ module.exports = (io) => {
      * @param {string} id - ID del comercio.
      * @returns {JSON} Mensaje de éxito o error en caso de fallo.
      */
-    router.put("/trade/:id", (req, res) => activeState(req, res, io));
+    router.put("/trade/:id", AuthMiddleware, (req, res) => activeState(req, res, io));
 
     return router;
 };

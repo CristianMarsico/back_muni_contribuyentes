@@ -4,6 +4,7 @@ const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
 const { getAll, updateConfiguration } = require("../controllers/ConfigurationController.js");
+const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 
 
 module.exports = (io) => {
@@ -19,7 +20,7 @@ module.exports = (io) => {
  *  - 404: Si no hay configuraciones disponibles.
  *  - 500: Si ocurre un error en el servidor.
  */
-    router.get("/configuration", getAll);
+   router.get("/configuration", AuthMiddleware, getAll);
 
     /**
  * Ruta para actualizar una configuración existente.
@@ -36,6 +37,6 @@ module.exports = (io) => {
  *  - 404: Si no se pudo actualizar la configuración.
  *  - 500: Si ocurre un error en el servidor.
  */
-    router.put("/configuration/:id", (req, res) => updateConfiguration(req, res, io));
+   router.put("/configuration/:id", AuthMiddleware, (req, res) => updateConfiguration(req, res, io));
     return router;
 };

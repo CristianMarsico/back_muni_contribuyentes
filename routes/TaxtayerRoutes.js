@@ -23,7 +23,7 @@ module.exports = (io) => {
    * @throws {Error} 404 - Si no hay contribuyentes en la base de datos.
    * @throws {Error} 500 - Si ocurre un error en el servidor.
    */
-    router.get("/taxpayer", getAll);
+  router.get("/taxpayer", AuthMiddleware, getAll);
 
     /**
   * Ruta para actualizar el estado de un contribuyente.
@@ -39,7 +39,7 @@ module.exports = (io) => {
   * @throws {Error} 404 - Si el contribuyente no se encuentra o no se pudo actualizar.
   * @throws {Error} 500 - Si ocurre un error en el servidor.
   */
-    router.put("/taxpayer/:id", (req, res) => editActive(req, res, io));
+  router.put("/taxpayer/:id", AuthMiddleware,(req, res) => editActive(req, res, io));
 
     /**
   * Ruta para obtener un contribuyente y sus comercios asociados.
@@ -53,6 +53,6 @@ module.exports = (io) => {
   * @throws {Error} 404 - Si no hay comercios asociados al contribuyente.
   * @throws {Error} 500 - Si ocurre un error en el servidor.
   */
-    router.get("/taxpayer/:id", getWithTrade);
+  router.get("/taxpayer/:id", AuthMiddleware, getWithTrade);
     return router;
 };

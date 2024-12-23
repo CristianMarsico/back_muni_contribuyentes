@@ -40,34 +40,40 @@ exports.getByYearTradeMonth = async (req, res) => {
  * @returns {object} 404 - Error si no se puede agregar la DDJJ.
  * @returns {object} 500 - Error de servidor.
  */
-exports.addDdjj = async (req, res) => {
+exports.addDdjj = async (req, res, io) => {
     const { id_contribuyente, id_comercio, monto, descripcion } = req.body;
     try {
-        if (!id_contribuyente || !id_comercio || !monto || monto <= 0) {
-            return res.status(400).json({ error: 'Datos inválidos o incompletos.' });
-        }
+        if (!id_contribuyente || !id_comercio || !monto || monto <= 0) return res.status(400).json({ error: 'Datos inválidos o incompletos.' });
+        
 
         const configuracion = await getAll();
-        if (!configuracion) {
-            return res.status(500).json({ error: 'Error al obtener la configuración.' });
-        }
+        if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
+        
 
         const diaActual = new Date().getDate(); 
         const diaLimite = configuracion[0].fecha_limite_ddjj;
 
+        // const diaActual = 28
+        // const diaLimite = 27
+
         let cargadaEnTiempo = true;
 
         let montoFinal = monto;
+        let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
+      
 
+        //EN CASO DE QUE SUPERE LA FECHA
         if (diaActual > diaLimite) {
             cargadaEnTiempo = false;
-            montoFinal = configuracion[0].monto_defecto; // Usar el monto por defecto
+            //montoFinal = configuracion[0].monto_defecto; //2000 PESOS
+            tasa_calculada = montoFinal * configuracion[0].tasa_default;
         }
 
-        const tasa_calculada = montoFinal * configuracion[0].tasa_actual;
-        const nuevaDdjj = await addDdjj(id_contribuyente, id_comercio, monto, descripcion, cargadaEnTiempo, tasa_calculada);
+        //AGREGO LA DDJJ
+        const nuevaDdjj = await addDdjj(id_contribuyente, id_comercio, montoFinal, descripcion, cargadaEnTiempo, tasa_calculada);
         if (!nuevaDdjj) return res.status(404).json({ error: 'No se pudo agregar la DDJJ.' });
-    
+
+        io.emit('nueva-ddjj', { nuevaDdjj });
         return res.status(200).json({ message: 'DDJJ registrada exitosamente.', data: nuevaDdjj });
     } catch (error) {
         return res.status(500).json({ error: 'Error en el servidor' });

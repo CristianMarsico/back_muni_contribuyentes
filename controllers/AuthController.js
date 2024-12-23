@@ -22,11 +22,13 @@ const bcrypt = require('bcrypt');
  * @returns {Object} Respuesta HTTP con el estado de la operación.
  */
 exports.register = async (req, res, io) => {
-    const { nombre, apellido, cuit, email, direccion, telefono, password, razon_social, misComercios } = req.body;
+    const { nombre, apellido, cuit, email, direccion, telefono, password, rePassword, razon_social, misComercios } = req.body;
 
     const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
 
     try {
+        if (password !== rePassword ) return res.status(404).json({ error: 'Las contraseñas no coinciden.' });
+
         const id_rol = await getRoleByName('user');
 
         const salt = await bcrypt.genSalt(8);

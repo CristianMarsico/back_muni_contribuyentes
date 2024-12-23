@@ -29,10 +29,14 @@ exports.updateExipirationDate = async (id, date) => {
         UPDATE fecha_vencimiento
         SET fecha_vencimiento = $1
         WHERE id_vencimiento = $2
-        RETURNING id_vencimiento, fecha_vencimiento;
+        ;
     `;
     const values = [date, id];
 
-    const result = await conn.query(query, values);
-    return result.rows[0];
+    try {
+        const result = await conn.query(query, values);      
+        return result;
+    } catch (err) {
+        throw new Error('Error en la base de datos');
+    }
 };

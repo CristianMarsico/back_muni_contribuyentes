@@ -50,8 +50,8 @@ exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, 
     `;
     const values = [fecha_limite_ddjj, tasa_actual,monto_ddjj_defecto, tasa_default, id];
     try {
-        await conn.query(query, values);
-        return { success: true };
+        const result = await conn.query(query, values);      
+        return result;               
     } catch (err) {       
         throw new Error('Error en la base de datos');
     }

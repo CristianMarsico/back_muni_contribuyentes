@@ -36,7 +36,6 @@ exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
     });
 };
 
-
 /**
  * Agrega una nueva DDJJ para un contribuyente y comercio.
  * 
