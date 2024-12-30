@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { getByYearTradeMonth, addDdjj } = require("../controllers/DdjjController.js");
+const { getByYearTradeMonth, addDdjj, getAllNoSendRafam, updateStateSendRafam } = require("../controllers/DdjjController.js");
 const { ExistsDDJJ } = require('../middlewares/ExistsDDJJ.js');
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 
@@ -34,7 +34,12 @@ module.exports = (io) => {
      * @returns {object} 404 - Error si no se puede agregar la DDJJ.
      * @returns {object} 500 - Error de servidor.
      */
-    router.post("/ddjj", ExistsDDJJ, (req, res) => addDdjj(req, res, io));
+    router.post("/ddjj", ExistsDDJJ, AuthMiddleware, (req, res) => addDdjj(req, res, io));
+    
+    router.get("/ddjj", AuthMiddleware, getAllNoSendRafam);
+
+    router.put("/ddjj/:id_taxpayer/:id_trade/:id_date", AuthMiddleware, (req, res) => updateStateSendRafam(req, res, io));
+
 
     return router;
 };

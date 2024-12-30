@@ -1,6 +1,6 @@
 "use strict";
 const {
-    register
+    register, getAllAdmins, deleteUser
 } = require('../models/UserModel.js');
 
 const {
@@ -20,7 +20,7 @@ const bcrypt = require('bcrypt');
  * @param {Object} io - El objeto Socket.io para emitir eventos en tiempo real.
  * @returns {Object} Respuesta HTTP con el estado de la operación.
  */
-exports.register = async (req, res) => {
+exports.register = async (req, res, io) => {
     const { usuario, password, rePassword } = req.body;
 
     try {
@@ -40,11 +40,39 @@ exports.register = async (req, res) => {
         );
 
         if (!nuevoAdmin) return res.status(404).json({ error: 'No se pudo registrar el usuario.' });
+        
         // Emitir el nuevo contribuyente con todos sus datos
-        //io.emit('nuevo-contribuyente', nuevoContribuyente);
-
+        io.emit('new-admin', nuevoAdmin);
         return res.status(200).json({ message: 'Usuario registrado exitosamente.', data: nuevoAdmin });
     } catch (error) {
         return res.status(500).json({ error: 'Error en el servidor' });
+    }
+};
+
+
+exports.getAllAdmins = async (req, res) => {  
+    try {
+        const id_rol = await getRoleByName('admin');
+      
+        let response = await getAllAdmins(id_rol[0].id_rol);     
+        if (response && response.length > 0)
+            return res.status(200).json({ response });
+        return res.status(404).json({ error: "Aún no se han registrado administradores" });
+    } catch (error) {
+        return res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+exports.deleteUser = async (req, res, io) => {
+    const { id } = req.params;   
+    try {
+        let id_deleted = await deleteUser(id, res)
+        if (id_deleted){
+            io.emit('deleted_admin', id_deleted);
+            return res.status(200).json({ message: `Administrador borrado con éxito` }); 
+        } 
+        else return res.status(404).json({ error: "Error: No se ha podido eliminar" })
+    } catch (error) {
+        return res.status(500).json({ error: "Error de servidor" });
     }
 };

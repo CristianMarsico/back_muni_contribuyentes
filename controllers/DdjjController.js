@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getByYearTradeMonth, addDdjj
+    getByYearTradeMonth, addDdjj, getAllNoSendRafam, updateStateSendRafam
 } = require('../models/DdjjModel.js');
 
 const {
@@ -79,3 +79,32 @@ exports.addDdjj = async (req, res, io) => {
         return res.status(500).json({ error: 'Error en el servidor' });
     }
 };
+
+exports.getAllNoSendRafam = async (req, res) => {
+    try {
+        let response = await getAllNoSendRafam();
+        if (response && response.length > 0)
+            return res.status(200).json({ response });
+        return res.status(404).json({ error: "Todas las ddjj han sido cargadas en rafam" });
+    } catch (error) {
+        return res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+exports.updateStateSendRafam = async (req, res, io) => {
+    const { id_taxpayer, id_trade, id_date } = req.params;    
+    if (!id_taxpayer ||!id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
+    try {
+        let updatedActive = await updateStateSendRafam(id_taxpayer, id_trade, id_date);
+        
+        if (updatedActive.rowCount > 0) {
+            io.emit('ddjj-newState', { updatedActive });
+            return res.status(200).json({ message: "La ddjj ha sido procesada con éxito", data: updatedActive });
+        } else {
+            return res.status(404).json({ error: "La ddjj no se pudo procesar" });
+        }       
+    } catch (error) {
+        return res.status(500).json({ error: "Error de servidor" });
+    }
+};
+

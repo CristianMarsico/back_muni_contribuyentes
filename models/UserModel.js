@@ -25,3 +25,26 @@ exports.register = async (usuario, password, id_rol) => {
         throw new Error('Error al registrar usuario.');
     }
 };
+
+exports.getAllAdmins = (id_rol) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT * FROM USUARIO WHERE id_rol = $1 ORDER BY usuario DESC`;
+        conn.query(sql, [id_rol], (err, resultados) => {
+            if (err) return reject({ status: 500, message: 'Error al obtener los administradores' });
+            if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve las filas si hay resultados
+            resolve([]);  // Devuelve una lista vacía si no hay coincidencias
+        });
+    });
+};
+
+exports.deleteUser = (id, res) => {
+    return new Promise((resolve, reject) => {
+        const sql = `DELETE FROM USUARIO WHERE id_usuario = $1 RETURNING id_usuario`;
+        conn.query(sql, [id], (err, resultados) => {
+            if (err) return reject(err); // Rechaza la promesa en caso de error
+            // En PostgreSQL, puedes comprobar el número de filas afectadas con `rowCount`
+            if (resultados.rowCount > 0) return resolve(true); // Éxito, eliminó alguna fila
+            else return resolve(false); // No se encontró el análisis para eliminar         
+        });
+    });
+};

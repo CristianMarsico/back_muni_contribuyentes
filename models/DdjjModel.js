@@ -50,13 +50,49 @@ exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
 exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada) => {
     try {
         const query = `
-      INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada)
-      VALUES ($1, $2, CURRENT_DATE, $3, $4, $5, $6)
+      INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam)
+      VALUES ($1, $2, CURRENT_DATE, $3, $4, $5, $6, false)
       RETURNING id_contribuyente, id_comercio, fecha, monto, descripcion
     `;
         const result = await conn.query(query, [id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada]);
         return result.rows[0];
     } catch (error) {        
         throw new Error('Error al registrar la DDJJ.');
+    }
+};
+
+exports.getAllNoSendRafam = async () => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT c.cuit, dj.*, com.cod_comercio, com.nombre_comercio 
+                    FROM CONTRIBUYENTE c JOIN DDJJ dj
+                        USING(id_contribuyente)
+                     JOIN COMERCIO com 
+                        USING(id_comercio)
+                     WHERE cargada_rafam = false
+                     ORDER BY c.cuit, com.cod_comercio`;
+        conn.query(sql, (err, resultados) => {
+            if (err) return reject({ status: 500, message: 'Error al obtener las ddjj' });
+            if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas
+            resolve([]);  // Devuelve una lista vacía si no hay tareas
+        });
+    });
+};
+
+exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
+    const query = `
+        UPDATE DDJJ
+        SET cargada_rafam = true
+        WHERE id_contribuyente = $1
+            AND id_comercio = $2
+            AND fecha = $3
+        ;
+    `;
+    const values = [id_taxpayer, id_trade, id_date];
+
+    try {
+        const result = await conn.query(query, values);
+        return result;
+    } catch (err) {
+        throw new Error('Error en la base de datos');
     }
 };

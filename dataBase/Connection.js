@@ -20,14 +20,15 @@ const conn = new Pool({
 /**
  * Función para inicializar los roles por defecto en la base de datos.
  * 
- * Esta función verifica si los roles `admin` y `user` existen en la base de datos. Si no existen, los crea.
+ * Esta función verifica si los roles `super_admin`, `admin` y `user` existen en la base de datos. 
+ * Si no existen, los crea.
  * 
  * @async
  * @function inizializeRolesDefault
  * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
  */
 const inizializeRolesDefault = async () => {
-    let rol = ['admin', 'user'];
+    let rol = ['super_admin','admin', 'user'];
     try {
         for (let r of rol) {
             let results = await conn.query("SELECT * FROM rol WHERE rol = $1", [r]);
@@ -67,7 +68,7 @@ const initializeUserDefault = async () => {
         const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
 
         // Asignar el rol de admin
-        const roleResult = await conn.query("SELECT id_rol FROM rol WHERE rol = 'admin'");
+        const roleResult = await conn.query("SELECT id_rol FROM rol WHERE rol = 'super_admin'");
         const roleId = roleResult.rows[0].id_rol;
 
         // Crear el usuario por defecto

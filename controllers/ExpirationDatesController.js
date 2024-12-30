@@ -37,7 +37,7 @@ exports.updateExipirationDate = async (req, res, io) => {
         // Si la actualización fue exitosa
         if (updatedActive.rowCount > 0) {
             io.emit('fecha-nueva', { updatedActive });
-            return res.status(200).json({ message: "La fecha ha sifo cambiada con éxito", data: updatedActive });
+            return res.status(200).json({ message: "La fecha ha sido cambiada con éxito", data: updatedActive });
         } else {
             return res.status(404).json({ error: "La fecha no se pudo cambiar" });
         }       
