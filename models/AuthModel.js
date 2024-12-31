@@ -103,3 +103,41 @@ exports.getTaxpayerWithRole = async (cuit) => {
         });
     });
 };
+
+
+exports.saveResetCode = async (email, code) => {
+    try {
+        const query = `
+            UPDATE contribuyente
+            SET reset_code = $1, reset_code_expiration = NOW() + INTERVAL '10 minutes'
+            WHERE email = $2
+        `;
+        await conn.query(query, [code, email]);
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
+
+exports.verifyResetCode = async(email, code) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT *
+                    FROM contribuyente
+                    WHERE email = $1 AND reset_code = $2 AND reset_code_expiration > NOW()`
+            ;
+        conn.query(sql, [email, code], (err, resultados) => {
+            if (err) return reject({ status: 500, message: 'Error al obtener los datos del usuario' });
+            if (resultados && resultados.rows.length > 0) return resolve(resultados.rows);
+            resolve([]);
+        });
+    });
+}
+
+
+exports.updatePassword = async(email, hashedPassword) => {
+    const query = 'UPDATE contribuyente SET password = $1, reset_code = NULL, reset_code_expiration = NULL WHERE email = $2';
+    const values = [hashedPassword, email];
+
+    const result = await conn.query(query, values);
+    return result.rows[0];
+}

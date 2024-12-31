@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
+
 /**
  * Conexión a la base de datos utilizando la librería `pg`.
  * 
@@ -16,6 +17,7 @@ const conn = new Pool({
     database: process.env.DB_NAME,
     ssl: process.env.MODO === 'produccion'
 });
+
 
 /**
  * Función para inicializar los roles por defecto en la base de datos.

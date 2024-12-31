@@ -1,6 +1,8 @@
 "use strict";
 const {
-    register, addTrade, getUserWithRole, getTaxpayerWithRole
+    register, addTrade, getUserWithRole,
+    getTaxpayerWithRole, saveResetCode, verifyResetCode,
+    updatePassword
 } = require('../models/AuthModel.js');
 
 const {
@@ -9,6 +11,7 @@ const {
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const nodemailer = require("nodemailer");
 
 /**
  * Controlador que maneja el registro de un nuevo contribuyente.
@@ -27,7 +30,7 @@ exports.register = async (req, res, io) => {
     const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
 
     try {
-        if (password !== rePassword ) return res.status(404).json({ error: 'Las contraseñas no coinciden.' });
+        if (password !== rePassword) return res.status(404).json({ error: 'Las contraseñas no coinciden.' });
 
         const id_rol = await getRoleByName('user');
 
@@ -62,7 +65,7 @@ exports.register = async (req, res, io) => {
         io.emit('nuevo-contribuyente', nuevoContribuyente);
 
         return res.status(200).json({ message: 'Contribuyente registrado y comercios agregados exitosamente.', data: nuevoContribuyente });
-    } catch (error) {       
+    } catch (error) {
         return res.status(500).json({ error: 'Error en el servidor' });
     }
 };
@@ -133,7 +136,7 @@ exports.loginAdmin = async (req, res) => {
  */
 exports.loginTaxpayer = async (req, res) => {
 
-    const { cuit, password } = req.body;    
+    const { cuit, password } = req.body;
     const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
 
     try {
@@ -209,10 +212,66 @@ exports.logout = (req, res) => {
  * @param {Object} res - Objeto de respuesta que envía los datos protegidos.
  * @returns {Object} - Un objeto JSON con la información del usuario autenticado.
  */
-exports.getProtectedData = (req, res) => {    
+exports.getProtectedData = (req, res) => {
     res.status(200).json({ user: req.user });
 };
 
+exports.sendResetCode = async (req, res) => {
+    const { email } = req.body;
+    try {
+        // Generar un código de 4 dígitos
+        const resetCode = Math.floor(1000 + Math.random() * 9000);
+
+        // Guardar el código y la expiración en la base de datos
+        await saveResetCode(email, resetCode);
+
+        // Configurar y enviar el correo
+        const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Código de recuperación de contraseña",
+            text: `Tu código de recuperación es: ${resetCode}`,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ message: "Revise su correo. El código ha sido enviado." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al enviar el código." });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;   
+    try {      
+        const user = await verifyResetCode(email, code);
+        if (user.length === 0) return res.status(400).json({ error: "Código inválido o expirado." });
+
+        // Hashear la nueva contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // // Actualizar la contraseña en la base de datos
+        const updatedPass = updatePassword(email, hashedPassword);
+        if (!updatedPass) return res.status(404).json({ error: "No fue posible cambiar la contraseña." });
+
+        return res.status(200).json({
+            message: "Contraseña modificada con éxito",
+            data: updatedPass
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al actualizar la contraseña." });
+    }
+};
 
 /**
  * Convierte una cadena de texto a un número tipo BigInt.
