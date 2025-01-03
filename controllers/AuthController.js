@@ -1,6 +1,6 @@
 "use strict";
 const {
-    register, addTrade, getUserWithRole,
+    register, getUserWithRole,
     getTaxpayerWithRole, saveResetCode, verifyResetCode,
     updatePassword
 } = require('../models/AuthModel.js');
@@ -8,6 +8,10 @@ const {
 const {
     getRoleByName
 } = require('../models/RolModel.js');
+
+const {
+    addTrade
+} = require('../models/TradeModel');
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');

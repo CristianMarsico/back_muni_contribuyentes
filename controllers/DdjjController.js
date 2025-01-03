@@ -98,8 +98,16 @@ exports.updateStateSendRafam = async (req, res, io) => {
         let updatedActive = await updateStateSendRafam(id_taxpayer, id_trade, id_date);
         
         if (updatedActive.rowCount > 0) {
-            io.emit('ddjj-newState', { updatedActive });
-            return res.status(200).json({ message: "La ddjj ha sido procesada con éxito", data: updatedActive });
+            io.emit('ddjj-newState', {
+                id_taxpayer,
+                id_trade,
+                id_date,
+                cargada_rafam: true
+            });
+            return res.status(200).json({
+                message: "La DDJJ ha sido procesada con éxito",
+                data: updatedActive
+            });
         } else {
             return res.status(404).json({ error: "La ddjj no se pudo procesar" });
         }       

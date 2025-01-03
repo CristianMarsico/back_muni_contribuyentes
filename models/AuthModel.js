@@ -33,32 +33,6 @@ exports.register = async (nombre, apellido, cuit, email, direccion, telefono, pa
     }
 };
 
-/**
- * Agrega los comercios asociados a un contribuyente en la base de datos.
- * 
- * @async
- * @function addTrade
- * @param {Array} misComercios - Lista de objetos que representan los comercios a agregar.
- * @param {number} id_contribuyente - El ID del contribuyente al que se asociarán los comercios.
- * @returns {boolean} `true` si los comercios fueron agregados exitosamente.
- * @throws {Error} Si ocurre un error retorna `false`.
- */
-exports.addTrade = async (misComercios, id_contribuyente) => {
-    try {
-        const query = `
-            INSERT INTO comercio (cod_comercio, nombre_comercio, direccion_comercio, estado, id_contribuyente)
-            VALUES ($1, $2, $3, $4, $5)
-        `;
-
-        for (let comercios of misComercios) {
-            const { codigo, nombre, direccion } = comercios;
-            await conn.query(query, [codigo, nombre, direccion,false, id_contribuyente]);
-        }
-        return true; // Comercios agregados correctamente
-    } catch (error) {        
-        return false;
-    }
-};
 
 /**
  * Obtiene un usuario y su rol a partir del nombre de usuario.

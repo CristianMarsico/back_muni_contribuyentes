@@ -48,3 +48,26 @@ exports.deleteUser = (id, res) => {
         });
     });
 };
+
+/**
+ * 
+ * @function updatePass
+ * @param {string} id - El ID del administrado que se desea actualizar.
+ * @param {string} pass - La contraseña nueva que se desea persistir.
+ * @returns {Promise} Promesa que resuelve con un objeto indicando si la actualización fue exitosa.
+ * @throws {Error} Si ocurre un error al ejecutar la consulta SQL.
+ */
+exports.updatePass = async (id, pass) => {
+    const query = `
+        UPDATE USUARIO
+        SET password = $1            
+        WHERE id_usuario = $2;
+    `;
+    const values = [pass, id];
+    try {
+        const result = await conn.query(query, values);
+        return result;
+    } catch (err) {
+        throw new Error('Error en la base de datos');
+    }
+};

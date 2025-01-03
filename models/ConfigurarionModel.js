@@ -34,21 +34,19 @@ exports.getAll = () => {
  * @param {string} fecha_limite_ddjj - La nueva fecha límite para la declaración jurada.
  * @param {number} monto_ddjj_defecto - El nuevo monto de la declaración jurada por defecto.
  * @param {number} tasa_actual - La nueva tasa actual.
- * @param {number} tasa_default - La nueva tasa por defecto.
  * @returns {Promise} Promesa que resuelve con un objeto indicando si la actualización fue exitosa.
  * @throws {Error} Si ocurre un error al ejecutar la consulta SQL.
  */
-exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual, tasa_default) => {
+exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual) => {
     const query = `
         UPDATE configuracion
         SET 
             fecha_limite_ddjj = $1,
             tasa_actual = $2,
-            monto_defecto = $3,
-            tasa_default = $4
-        WHERE id_configuracion = $5;
+            monto_defecto = $3           
+        WHERE id_configuracion = $4;
     `;
-    const values = [fecha_limite_ddjj, tasa_actual,monto_ddjj_defecto, tasa_default, id];
+    const values = [fecha_limite_ddjj, tasa_actual,monto_ddjj_defecto, id];
     try {
         const result = await conn.query(query, values);      
         return result;               

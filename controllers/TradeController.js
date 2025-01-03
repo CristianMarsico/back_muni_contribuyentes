@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getAll, get, activeState
+    getAll, get, activeState, newTrade
 } = require('../models/TradeModel.js');
 
 /**
@@ -63,3 +63,19 @@ exports.activeState = async (req, res, io) => {
     }
 };
 
+
+exports.newTrade = async (req, res, io) => {
+    const { id_contribuyente, codigo_comercio, nombre_comercio, direccion_comercio } = req.body;
+    try {
+        if (!id_contribuyente) return res.status(404).json({ error: 'Error, faltan datos obligatorios.' });
+        // Agregar los comercios si existen  
+        const comerciosAgregado = await newTrade(id_contribuyente, codigo_comercio, nombre_comercio, direccion_comercio);
+         if (!comerciosAgregado) return res.status(404).json({ error: 'Error al agregar comercio.' });
+        
+        // Emitir el nuevo contribuyente con todos sus datos
+        io.emit('new-trade', { id_contribuyente });
+        return res.status(200).json({ message: 'Comercio registrado exitosamente.', data: comerciosAgregado });
+    } catch (error) {
+        return res.status(500).json({ error: 'Error en el servidor' });
+    }
+};

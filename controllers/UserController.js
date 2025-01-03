@@ -1,6 +1,6 @@
 "use strict";
 const {
-    register, getAllAdmins, deleteUser
+    register, getAllAdmins, deleteUser, updatePass
 } = require('../models/UserModel.js');
 
 const {
@@ -74,5 +74,25 @@ exports.deleteUser = async (req, res, io) => {
         else return res.status(404).json({ error: "Error: No se ha podido eliminar" })
     } catch (error) {
         return res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+exports.updatePass = async (req, res) => {
+    const { id, pass } = req.params;
+    
+    try {
+        const salt = await bcrypt.genSalt(8);
+        const hashedPassword = await bcrypt.hash(pass, salt);
+        // Llamar al modelo para actualizar la configuración
+        const result = await updatePass(id, hashedPassword);
+
+        // Si la actualización fue exitosa
+        if (result.rowCount > 0) {        
+            return res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+        } else {
+            return res.status(404).json({ error: 'Error al actualizar la contraseña' });
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Error de servidor' });
     }
 };
