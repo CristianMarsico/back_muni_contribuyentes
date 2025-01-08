@@ -2,15 +2,18 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Middleware que verifica si el emial existe en la base de datos.
- * @param {object} req - El objeto de solicitud HTTP que contiene los parámetros de la ruta.
- * @param {object} res - El objeto de respuesta HTTP.
- * @param {function} next - Función para pasar el control al siguiente middleware o ruta.
- *
- * @throws {Error} Si hay un error en la consulta de la base de datos.
- *
- * Si el emial especificado existe en la base de datos, llama a la función `next` para permitir que la solicitud continúe.
- * Si no existe, responde con un código de estado 404 y un mensaje de error.
+ * Middleware para verificar si el email ya está registrado en la base de datos.
+ * 
+ * Si el email ya está registrado, se pasa al siguiente middleware. Si no lo está,
+ * se retorna un error indicando que el email no se encuentra registrado.
+ * 
+ * @function ExistsEmail
+ * 
+ * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} res - El objeto de la respuesta.
+ * @param {Function} next - Función que pasa el control al siguiente middleware.
+ * 
+ * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
 exports.ExistsEmail = (req, res, next) => {
     const { email } = req.body;

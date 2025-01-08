@@ -4,11 +4,19 @@ const {
 } = require('../models/ExpirationDatesModel.js');
 
 /**
- * Obtiene todas las fechas de vencimiento desde la base de datos.
- * Si se encuentran registros, se devuelven en formato JSON.
+ * Controlador para obtener todas las fechas de vencimiento.
  * 
- * @param {Object} req - La solicitud HTTP.
- * @param {Object} res - La respuesta HTTP.
+ * Este controlador maneja la solicitud para obtener todas las fechas de vencimiento almacenadas en la base de datos. 
+ * Si hay fechas disponibles, se devuelven en la respuesta; si no, se envía un mensaje indicando que no hay fechas cargadas.
+ * 
+ * @param {Object} req - El objeto de la solicitud que contiene los parámetros para la consulta.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver los datos o un error.
+ * 
+ * @returns {Object} - Respuesta JSON con las fechas de vencimiento si la operación es exitosa, o un mensaje de error si no hay fechas cargadas o si ocurre un problema.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.get('/fechas', getAllController);
  */
 exports.getAll = async (req, res) => {
     try {
@@ -23,11 +31,21 @@ exports.getAll = async (req, res) => {
 };
 
 /**
- * Actualiza la fecha de vencimiento de un registro específico y emite un evento de actualización.
+ * Controlador para actualizar la fecha de vencimiento.
  * 
- * @param {Object} req - La solicitud HTTP, que contiene los parámetros 'id' y 'date'.
- * @param {Object} res - La respuesta HTTP.
- * @param {Object} io - El objeto de Socket.io para emitir el evento de actualización.
+ * Este controlador maneja la solicitud para actualizar la fecha de vencimiento de un registro en la base de datos. 
+ * Si la actualización es exitosa, emite un evento y devuelve un mensaje de éxito. Si no se puede actualizar la fecha, 
+ * devuelve un mensaje de error.
+ * 
+ * @param {Object} req - El objeto de la solicitud que contiene los parámetros de la fecha y el id para la actualización.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver los datos o un mensaje de error.
+ * @param {Object} io - El objeto de Socket.IO para emitir eventos de actualización.
+ * 
+ * @returns {Object} - Respuesta JSON con un mensaje de éxito y los datos actualizados, o un mensaje de error si la actualización falla.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.put('/fecha/:id/:date', updateExipirationDateController);
  */
 exports.updateExipirationDate = async (req, res, io) => {
     const { id, date } = req.params;   

@@ -2,15 +2,18 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Middleware que verifica si el usuario (admin) existe en la base de datos.
- * @param {object} req - El objeto de solicitud HTTP que contiene los parámetros de la ruta.
- * @param {object} res - El objeto de respuesta HTTP.
- * @param {function} next - Función para pasar el control al siguiente middleware o ruta.
- *
- * @throws {Error} Si hay un error en la consulta de la base de datos.
- *
- * Si el usuario especificado existe en la base de datos, responde con un código de estado 404 y un mensaje de error.
- * Si no existe, llama a la función `next` para permitir que la solicitud continúe.
+ * Middleware para verificar si un usuario ya está registrado en la base de datos.
+ * 
+ * Si el usuario ya existe, se retorna un error indicando que el usuario ya está registrado.
+ * Si no, se pasa al siguiente middleware.
+ * 
+ * @function ExistsUser
+ * 
+ * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} res - El objeto de la respuesta.
+ * @param {Function} next - Función que pasa el control al siguiente middleware.
+ * 
+ * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
 exports.ExistsUser = (req, res, next) => {
     const { usuario } = req.body;   

@@ -1,17 +1,19 @@
 const jwt = require('jsonwebtoken');
 
 /**
- * Middleware que verifica si el usuario está autenticado mediante un token JWT en las cookies.
- * 
- * Este middleware intercepta las solicitudes y valida el token JWT para garantizar que el usuario tenga acceso a los recursos protegidos.
- * Si el token es válido, almacena la información decodificada del usuario en el objeto `req.user`.
- * Si el token es inválido o no se encuentra, devuelve una respuesta con un error.
- * 
+ * Middleware para verificar que el usuario esté autenticado mediante un token JWT.
+ *
+ * Esta función busca el token JWT en las cookies de la solicitud, lo verifica y
+ * almacena la información decodificada del usuario en la solicitud para su uso posterior.
+ * Si el token no es válido o no está presente, se devuelve un error.
+ *
  * @function AuthMiddleware
- * @param {Object} req - La solicitud HTTP que contiene las cookies con el token JWT.
- * @param {Object} res - La respuesta HTTP que devuelve un error si el token es inválido o no está presente.
- * @param {function} next - Función que permite pasar al siguiente middleware si el token es válido.
- * @returns {Object} Respuesta JSON con un mensaje de error si el token es inválido o no se encuentra.
+ *
+ * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} res - El objeto de la respuesta.
+ * @param {Function} next - Función que pasa el control al siguiente middleware.
+ *
+ * @returns {Object} Respuesta con el estado de autorización o un error.
  */
 exports.AuthMiddleware = (req, res, next) => {
     const token = req.cookies.authToken;   

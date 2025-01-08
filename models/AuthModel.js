@@ -2,22 +2,33 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Registra un nuevo contribuyente en la base de datos.
+ * Función para registrar un nuevo contribuyente en la base de datos.
+ * 
+ * Esta función inserta un nuevo registro en la tabla `contribuyente` con la información proporcionada
+ * y devuelve los datos del contribuyente creado.
  * 
  * @async
  * @function register
- * @param {string} nombre - El nombre del contribuyente.
- * @param {string} apellido - El apellido del contribuyente.
- * @param {string} cuit - El número de CUIT del contribuyente.
- * @param {string} email - El correo electrónico del contribuyente.
- * @param {string} direccion - La dirección del contribuyente.
- * @param {string} telefono - El teléfono del contribuyente.
- * @param {string} password - La contraseña del contribuyente.
- * @param {string} razon_social - La razón social del contribuyente.
- * @param {boolean} estado - El estado inicial del contribuyente.
- * @param {number} id_rol - El ID del rol asignado al contribuyente.
- * @returns {Object} El nuevo contribuyente registrado con todos sus datos.
- * @throws {Error} Si ocurre un error al registrar el contribuyente.
+ * @param {String} nombre - Nombre del contribuyente.
+ * @param {String} apellido - Apellido del contribuyente.
+ * @param {Number} cuit - CUIT del contribuyente, convertido en número.
+ * @param {String} email - Dirección de correo electrónico del contribuyente.
+ * @param {String} direccion - Dirección del contribuyente.
+ * @param {String} telefono - Número de teléfono del contribuyente.
+ * @param {String} password - Contraseña encriptada del contribuyente.
+ * @param {String} razon_social - Razón social asociada al contribuyente.
+ * @param {Boolean} estado - Estado inicial del contribuyente (por defecto `false`).
+ * @param {Number} id_rol - ID del rol asignado al contribuyente.
+ * 
+ * @returns {Promise<Object>} - Devuelve un objeto con los datos del contribuyente creado.
+ * 
+ * @throws {Error} - Lanza un error si ocurre un problema al registrar al contribuyente.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * register('Juan', 'Pérez', 20123456789, 'juan.perez@example.com', 'Calle Falsa 123', '123456789', 'hashedPassword', 'Negocio de Juan', false, 1)
+ *   .then(data => console.log(data))
+ *   .catch(error => console.error(error));
  */
 exports.register = async (nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol) => {
     try {
@@ -33,14 +44,18 @@ exports.register = async (nombre, apellido, cuit, email, direccion, telefono, pa
     }
 };
 
-
 /**
- * Obtiene un usuario y su rol a partir del nombre de usuario.
- * @function
- * @async
- * @param {string} usuario - El nombre de usuario del administrador.
- * @returns {Array} - Devuelve un array con los datos del usuario y su rol.
- * @throws {Error} - Si hay un error al consultar la base de datos.
+ * Función para obtener un usuario con su rol asociado.
+ *
+ * Esta función consulta la base de datos para recuperar información de un usuario
+ * basado en su nombre de usuario, incluyendo el rol asignado.
+ *
+ * @function getUserWithRole
+ * @param {String} usuario - Nombre del usuario a buscar.
+ *
+ * @returns {Promise<Array>} - Devuelve un array con los datos del usuario y su rol si existe, o un array vacío si no se encuentra.
+ *
+ * @throws {Error} - Si ocurre un error durante la consulta, se rechaza con un objeto que contiene el mensaje y el estado HTTP.
  */
 exports.getUserWithRole = async (usuario) => {    
     return new Promise((resolve, reject) => {
@@ -57,12 +72,17 @@ exports.getUserWithRole = async (usuario) => {
 };
 
 /**
- * Obtiene un contribuyente y su rol a partir del CUIT.
- * @function
- * @async
- * @param {number} cuit - El CUIT del contribuyente.
- * @returns {Array} - Devuelve un array con los datos del contribuyente y su rol.
- * @throws {Error} - Si hay un error al consultar la base de datos.
+ * Función para obtener un contribuyente con su rol asociado.
+ *
+ * Esta función realiza una consulta en la base de datos para recuperar la información
+ * de un contribuyente basado en su CUIT. También incluye el rol asociado al contribuyente.
+ *
+ * @function getTaxpayerWithRole
+ * @param {String} cuit - CUIT del contribuyente a buscar.
+ *
+ * @returns {Promise<Array>} - Devuelve un array con los datos del contribuyente y su rol si existe, o un array vacío si no se encuentra.
+ *
+ * @throws {Error} - Si ocurre un error durante la consulta, se rechaza con un objeto de error que incluye el mensaje y el estado HTTP.
  */
 exports.getTaxpayerWithRole = async (cuit) => {
     return new Promise((resolve, reject) => {
@@ -78,7 +98,30 @@ exports.getTaxpayerWithRole = async (cuit) => {
     });
 };
 
-
+/**
+ * Función para almacenar un código de recuperación de contraseña en la base de datos.
+ * 
+ * Esta función actualiza el registro del usuario con el código de recuperación y su tiempo de expiración 
+ * (10 minutos desde el momento de la solicitud).
+ * 
+ * @function saveResetCode
+ * @param {String} email - El correo electrónico del usuario al que se le asignará el código de recuperación.
+ * @param {Number} code - El código de recuperación generado.
+ * 
+ * @returns {Promise<Boolean>} - Devuelve `true` si la actualización fue exitosa, o `false` en caso de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * saveResetCode("usuario@example.com", 1234).then(success => {
+ *   if (success) {
+ *     console.log("Código guardado correctamente.");
+ *   } else {
+ *     console.log("Error al guardar el código.");
+ *   }
+ * });
+ * 
+ * @throws {Error} Si ocurre un error al ejecutar la consulta en la base de datos.
+ */
 exports.saveResetCode = async (email, code) => {
     try {
         const query = `
@@ -93,6 +136,19 @@ exports.saveResetCode = async (email, code) => {
     }
 };
 
+/**
+ * Función para verificar un código de restablecimiento de contraseña.
+ * 
+ * Valida que el código proporcionado coincida con el de la base de datos y que no haya expirado.
+ * 
+ * @function verifyResetCode
+ * @param {String} email - El correo electrónico asociado al usuario.
+ * @param {Number} code - El código de restablecimiento proporcionado por el usuario.
+ * 
+ * @returns {Promise<Array>} - Devuelve un array con los datos del usuario si el código es válido, o un array vacío si no lo es.
+ * 
+ * @throws {Error} Si ocurre un error al ejecutar la consulta.
+ */
 exports.verifyResetCode = async(email, code) => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT *
@@ -107,7 +163,19 @@ exports.verifyResetCode = async(email, code) => {
     });
 }
 
-
+/**
+ * Función para actualizar la contraseña de un usuario en la base de datos.
+ * 
+ * Esta función también elimina el código de restablecimiento y su tiempo de expiración después de actualizar la contraseña.
+ * 
+ * @function updatePassword
+ * @param {String} email - El correo electrónico asociado al usuario.
+ * @param {String} hashedPassword - La nueva contraseña hasheada.
+ * 
+ * @returns {Promise<Object|null>} - Devuelve los datos del usuario si la actualización fue exitosa, o `null` si no lo fue.
+ * 
+ * @throws {Error} Si ocurre un error al ejecutar la consulta.
+ */
 exports.updatePassword = async(email, hashedPassword) => {
     const query = 'UPDATE contribuyente SET password = $1, reset_code = NULL, reset_code_expiration = NULL WHERE email = $2';
     const values = [hashedPassword, email];

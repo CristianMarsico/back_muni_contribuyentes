@@ -2,15 +2,19 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Middleware que verifica si el la DDJJ de un contribuyente ya existe en la base de datos.
- * @param {object} req - El objeto de solicitud HTTP que contiene los parámetros de la ruta.
- * @param {object} res - El objeto de respuesta HTTP.
- * @param {function} next - Función para pasar el control al siguiente middleware o ruta.
+ * Middleware para verificar si ya existe una DDJJ registrada para el contribuyente
+ * y el comercio especificado en el mes y año actuales.
  *
- * @throws {Error} Si hay un error en la consulta de la base de datos.
+ * Si ya existe una DDJJ, se devuelve un error con el detalle de la DDJJ registrada.
+ * Si no existe, se continúa con el siguiente middleware.
  *
- * Si una DDJJ determinada existe en la base de datos, responde con un código de estado 404 y un mensaje de error.
- * Si no existe, llama a la función `next` para permitir que la solicitud continúe.
+ * @function ExistsDDJJ
+ *
+ * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} res - El objeto de la respuesta.
+ * @param {Function} next - Función que pasa el control al siguiente middleware.
+ *
+ * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
 exports.ExistsDDJJ = (req, res, next) => {   
     const { id_contribuyente, id_comercio } = req.body;

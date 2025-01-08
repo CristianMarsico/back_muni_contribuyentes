@@ -4,20 +4,25 @@ const {
 } = require('../models/TaxpayerModel.js');
 
 /**
- * Controlador para obtener todos los contribuyentes.
- *
- * @function getAll
- * @param {Object} req - Objeto de solicitud HTTP.
- * @param {Object} res - Objeto de respuesta HTTP.
- * @throws {Error} 404 - Si no hay contribuyentes en la base de datos.
- * @throws {Error} 500 - Si ocurre un error en el servidor.
+ * Controlador para obtener todos los contribuyentes de la base de datos.
+ * 
+ * Este controlador maneja la solicitud para obtener todos los contribuyentes registrados en la base de datos.
+ * Si se encuentran contribuyentes, se devuelve una respuesta con los datos; de lo contrario, se devuelve un error 404.
+ * 
+ * @param {Object} req - El objeto de la solicitud, que no requiere parámetros para esta función.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver los datos o un error.
+ * 
+ * @returns {Object} - Respuesta con los datos de los contribuyentes si existen, o un mensaje de error si no se encuentran.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.get('/contribuyentes', getAllController);
  */
 exports.getAll = async (req, res) => {
     try {
         let response = await getAll();
         if (response && response.length > 0)
-            return res.status(200).json({ response });
-     
+            return res.status(200).json({ response });    
         return res.status(404).json({ error: "No hay contribuyetes en la base de datos" });
     } catch (error) {
         return res.status(500).json({ error: "Error de servidor" });
@@ -25,13 +30,19 @@ exports.getAll = async (req, res) => {
 };
 
 /**
- * Controlador para obtener un contribuyente con sus comercios.
- *
- * @function getWithTrade
- * @param {Object} req - Objeto de solicitud HTTP, debe contener el parámetro `id`.
- * @param {Object} res - Objeto de respuesta HTTP.
- * @throws {Error} 404 - Si no hay comercios asociados al contribuyente.
- * @throws {Error} 500 - Si ocurre un error en el servidor.
+ * Controlador para obtener los datos de un contribuyente junto con sus comercios.
+ * 
+ * Este controlador maneja la solicitud para obtener la información del contribuyente, incluyendo sus comercios
+ * asociados. Si se encuentran datos, se devuelve una respuesta con los detalles; de lo contrario, se devuelve un error 404.
+ * 
+ * @param {Object} req - El objeto de la solicitud que contiene el parámetro `id` en la URL.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver los datos o un error.
+ * 
+ * @returns {Object} - Respuesta con los datos del contribuyente y sus comercios si existen, o un mensaje de error si no se encuentran.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.get('/contribuyentes/:id/comercios', getWithTradeController);
  */
 exports.getWithTrade = async (req, res) => {
     const { id } = req.params;
@@ -44,17 +55,22 @@ exports.getWithTrade = async (req, res) => {
     }
 };
 
-
 /**
- * Controlador para actualizar el estado de un contribuyente.
- *
- * @function editActive
- * @param {Object} req - Objeto de solicitud HTTP, debe contener el parámetro `id`.
- * @param {Object} res - Objeto de respuesta HTTP.
- * @param {Object} io - Objeto de Socket.io para emitir eventos en tiempo real.
- * @throws {Error} 400 - Si faltan datos necesarios para la operación.
- * @throws {Error} 404 - Si no se pudo actualizar el estado del contribuyente.
- * @throws {Error} 500 - Si ocurre un error en el servidor.
+ * Controlador para editar el estado de un contribuyente (activar).
+ * 
+ * Este controlador maneja la solicitud para activar a un contribuyente cambiando su estado a `true`. 
+ * Si el contribuyente es encontrado y actualizado correctamente, se devuelve una respuesta con los datos del contribuyente actualizado;
+ * si no se encuentra o no se puede actualizar, se devuelve un mensaje de error.
+ * 
+ * @param {Object} req - El objeto de la solicitud que contiene el parámetro `id` en la URL.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver los datos o un error.
+ * @param {Object} io - El objeto de la conexión de WebSocket para emitir eventos en tiempo real.
+ * 
+ * @returns {Object} - Respuesta con el estado actualizado del contribuyente si la operación es exitosa, o un mensaje de error si ocurre un problema.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.put('/contribuyentes/:id/activar', editActiveController);
  */
 exports.editActive = async (req, res, io) => {
     const { id } = req.params;   

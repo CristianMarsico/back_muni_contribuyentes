@@ -72,4 +72,4 @@ const PORT_URL = process.env.MODO === 'developer' ? process.env.PORT_DEV : proce
 server.listen(PORT_URL, () => {
     console.log(`Servidor escuchando en el puerto ${PORT_URL}`);
 });
-console.log(`Documentación disponible en http://localhost:${PORT_URL}/api-docs`);
+// console.log(`Documentación disponible en URL/api-docs`);

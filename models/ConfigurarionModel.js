@@ -2,14 +2,24 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Obtiene todas las configuraciones desde la base de datos.
+ * Servicio para obtener los datos de configuración de la aplicación.
  * 
- * <p>Esta función ejecuta una consulta SQL para obtener todas las configuraciones 
- * almacenadas en la base de datos y devuelve el resultado.</p>
+ * Esta función realiza una consulta SQL para obtener la configuración de la aplicación desde la base de datos, 
+ * como la fecha límite para el registro de DDJJ y la tasa actual utilizada para calcular los montos.
  * 
- * @function getAll
- * @returns {Promise} Promesa que resuelve con el array de configuraciones o un array vacío si no hay configuraciones.
- * @throws {Error} Si ocurre un error al realizar la consulta a la base de datos.
+ * @returns {Array} - Una lista con los datos de configuración obtenidos de la base de datos o una lista vacía si no se encuentran datos.
+ * 
+ * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * getAll()
+ *   .then(result => {
+ *     console.log(result); // Devuelve los datos de configuración
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error si ocurre
+ *   });
  */
 exports.getAll = () => {
     return new Promise((resolve, reject) => {
@@ -23,20 +33,7 @@ exports.getAll = () => {
 };
 
 
-/**
- * Actualiza una configuración específica en la base de datos.
- * 
- * <p>Esta función ejecuta una consulta SQL para actualizar una configuración específica 
- * en la base de datos con los valores proporcionados.</p>
- * 
- * @function updateConfiguration
- * @param {string} id - El ID de la configuración que se desea actualizar.
- * @param {string} fecha_limite_ddjj - La nueva fecha límite para la declaración jurada.
- * @param {number} monto_ddjj_defecto - El nuevo monto de la declaración jurada por defecto.
- * @param {number} tasa_actual - La nueva tasa actual.
- * @returns {Promise} Promesa que resuelve con un objeto indicando si la actualización fue exitosa.
- * @throws {Error} Si ocurre un error al ejecutar la consulta SQL.
- */
+
 exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual) => {
     const query = `
         UPDATE configuracion

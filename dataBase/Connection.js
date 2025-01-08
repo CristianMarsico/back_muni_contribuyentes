@@ -21,13 +21,11 @@ const conn = new Pool({
 
 /**
  * Función para inicializar los roles por defecto en la base de datos.
+ * Si los roles no existen, los inserta.
  * 
- * Esta función verifica si los roles `super_admin`, `admin` y `user` existen en la base de datos. 
- * Si no existen, los crea.
+ * @function initializeRolesDefault
  * 
- * @async
- * @function inizializeRolesDefault
- * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
+ * @returns {void} - No devuelve nada, solo realiza la inicialización de los roles.
  */
 const inizializeRolesDefault = async () => {
     let rol = ['super_admin','admin', 'user'];
@@ -44,13 +42,11 @@ const inizializeRolesDefault = async () => {
 
 /**
  * Función para inicializar un usuario por defecto en la base de datos.
+ * Si el usuario ya existe, no realiza ninguna acción.
  * 
- * Esta función crea un usuario por defecto con el nombre `admin` y la contraseña `admin`, encriptada con bcrypt.
- * Asigna al usuario el rol `admin`, y si el usuario ya existe, lo notifica.
- * 
- * @async
  * @function initializeUserDefault
- * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL o al encriptar la contraseña.
+ * 
+ * @returns {void} - No devuelve nada, solo crea el usuario si no existe.
  */
 const initializeUserDefault = async () => {
     const defaultUsername = "admin";
@@ -85,14 +81,12 @@ const initializeUserDefault = async () => {
 };
 
 /**
- * Función para inicializar fechas de vencimiento por defecto en la base de datos.
+ * Función para inicializar las fechas de vencimiento por defecto en la base de datos.
+ * Si las fechas ya existen, no realiza ninguna acción.
  * 
- * Esta función verifica si ya existen fechas en la tabla `fecha_vencimiento`. Si no existen, inserta un conjunto
- * de fechas predeterminadas con el formato `yyyy-mm-dd`.
- * 
- * @async
  * @function initializeFechasDefault
- * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
+ * 
+ * @returns {void} - No devuelve nada, solo carga las fechas si no existen.
  */
 const initializeFechasDefault = async () => {
     try {
@@ -126,14 +120,12 @@ const initializeFechasDefault = async () => {
 };
 
 /**
- * Función para inicializar configuraciones generales por defecto en la base de datos.
+ * Función para inicializar las configuraciones generales por defecto en la base de datos.
+ * Si las configuraciones ya existen, no realiza ninguna acción.
  * 
- * Esta función verifica si ya existen configuraciones en la tabla `configuracion`. Si no existen, inserta
- * una configuración predeterminada para `fecha_limite_ddjj`, `tasa_actual`, `monto_defecto`, y `tasa_default`.
- * 
- * @async
  * @function initializeDataConfigDefault
- * @throws {Error} Si ocurre un error durante la ejecución de la consulta SQL.
+ * 
+ * @returns {void} - No devuelve nada, solo carga las configuraciones si no existen.
  */
 const initializeDataConfigDefault = async () => {
     try {

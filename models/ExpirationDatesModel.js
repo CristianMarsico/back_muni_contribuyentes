@@ -2,9 +2,26 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Obtiene todas las fechas de vencimiento de la base de datos.
+ * Servicio para obtener todas las fechas de vencimiento.
  * 
- * @returns {Promise} Una promesa que resuelve con un arreglo de fechas o rechaza con un error.
+ * Esta función realiza una consulta SQL para obtener todas las fechas de vencimiento almacenadas en la base de datos. 
+ * Devuelve los resultados de la consulta, que incluyen el día, mes y año extraídos de la fecha de vencimiento. 
+ * Si ocurre un error en la consulta, se lanza una excepción.
+ * 
+ * @returns {Array} - Una lista de objetos que contienen el `id_vencimiento`, `dia`, `mes` y `anio` de las fechas de vencimiento. 
+ *                    Si no hay fechas, se devuelve una lista vacía.
+ * 
+ * @throws {Error} - Si ocurre un error durante la consulta SQL, se lanza un error con un mensaje descriptivo.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * getAll()
+ *   .then(result => {
+ *     console.log(result); // Devuelve las fechas de vencimiento con sus respectivos días, meses y años
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error si ocurre
+ *   });
  */
 exports.getAll = () => {
     return new Promise((resolve, reject) => {
@@ -18,11 +35,27 @@ exports.getAll = () => {
 };
 
 /**
- * Actualiza la fecha de vencimiento de un registro específico.
+ * Servicio para actualizar la fecha de vencimiento en la base de datos.
  * 
- * @param {string} id - El ID de la fecha de vencimiento que se desea actualizar.
- * @param {string} date - La nueva fecha de vencimiento.
- * @returns {Object} El registro actualizado.
+ * Esta función realiza una consulta SQL para actualizar la fecha de vencimiento en la base de datos. 
+ * Devuelve el resultado de la operación de actualización. Si ocurre un error, se lanza una excepción.
+ * 
+ * @param {number} id - El id de la fecha de vencimiento a actualizar.
+ * @param {string} date - La nueva fecha de vencimiento a establecer.
+ * 
+ * @returns {Object} - El objeto de resultado de la consulta, que contiene detalles sobre la actualización realizada.
+ * 
+ * @throws {Error} - Si ocurre un error durante la actualización de la base de datos, se lanza una excepción con el mensaje "Error en la base de datos".
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * updateExipirationDate(id, date)
+ *   .then(result => {
+ *     console.log(result); // Devuelve el resultado de la actualización
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error si ocurre
+ *   });
  */
 exports.updateExipirationDate = async (id, date) => {
     const query = `

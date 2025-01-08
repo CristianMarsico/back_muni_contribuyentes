@@ -18,15 +18,38 @@ const bcrypt = require('bcrypt');
 const nodemailer = require("nodemailer");
 
 /**
- * Controlador que maneja el registro de un nuevo contribuyente.
- * Realiza la validación de los datos, la creación del contribuyente y la asociación de comercios.
+ * Controlador para registrar un nuevo contribuyente.
+ * 
+ * Este controlador procesa la solicitud de registro de un contribuyente, valida los datos,
+ * encripta la contraseña, almacena la información en la base de datos y asocia los comercios si se proporcionan.
+ * Además, emite un evento en tiempo real con los datos del nuevo contribuyente.
  * 
  * @async
  * @function register
- * @param {Object} req - El objeto de solicitud HTTP que contiene los datos del formulario de registro.
- * @param {Object} res - El objeto de respuesta HTTP para enviar una respuesta al cliente.
- * @param {Object} io - El objeto Socket.io para emitir eventos en tiempo real.
- * @returns {Object} Respuesta HTTP con el estado de la operación.
+ * @param {Object} req - Objeto de solicitud de Express, que contiene los datos del cuerpo de la solicitud.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * @param {Object} io - Instancia de Socket.IO para emitir eventos en tiempo real.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * const req = {
+ *   body: {
+ *     nombre: 'Juan',
+ *     apellido: 'Pérez',
+ *     cuit: { prefijoCuit: '20', numeroCuit: '12345678', verificadorCuit: '9' },
+ *     email: 'juan.perez@example.com',
+ *     direccion: 'Calle Falsa 123',
+ *     telefono: '123456789',
+ *     password: 'password123',
+ *     rePassword: 'password123',
+ *     razon_social: 'Negocio de Juan',
+ *     misComercios: ['Comercio 1', 'Comercio 2']
+ *   }
+ * };
+ * const res = { status: () => ({ json: console.log }) };
+ * register(req, res, io);
  */
 exports.register = async (req, res, io) => {
     const { nombre, apellido, cuit, email, direccion, telefono, password, rePassword, razon_social, misComercios } = req.body;
@@ -75,14 +98,31 @@ exports.register = async (req, res, io) => {
 };
 
 /**
- * Controlador que maneja el login de un administrador.
- * Verifica las credenciales del administrador y genera un token JWT.
- * @function
+ * Controlador para el inicio de sesión de administradores.
+ * 
+ * Este controlador verifica las credenciales de un administrador, genera un token de autenticación 
+ * si las credenciales son válidas y configura una cookie con el token. También incluye medidas de seguridad
+ * para proteger la cookie contra accesos no autorizados.
+ * 
  * @async
- * @param {Object} req - Objeto de solicitud que contiene el `username` y `password` del administrador.
- * @param {Object} res - Objeto de respuesta que devuelve el estado del login.
- * @returns {Object} - Retorna un objeto JSON con el `id`, `nombre`, `rol` y `token` si el login es exitoso.
- * @throws {Error} - Si el usuario no existe o la contraseña es incorrecta, se retorna un error 404.
+ * @function loginAdmin
+ * @param {Object} req - Objeto de solicitud de Express, que contiene los datos del cuerpo de la solicitud.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * const req = {
+ *   body: {
+ *     username: 'admin',
+ *     password: 'adminPassword123'
+ *   }
+ * };
+ * const res = { 
+ *   status: () => ({ json: console.log, cookie: console.log }) 
+ * };
+ * loginAdmin(req, res);
  */
 exports.loginAdmin = async (req, res) => {
     const { username, password } = req.body;
@@ -129,14 +169,35 @@ exports.loginAdmin = async (req, res) => {
 };
 
 /**
- * Controlador que maneja el login de un contribuyente.
- * Verifica las credenciales del contribuyente y genera un token JWT.
- * @function
+ * Controlador para el inicio de sesión de contribuyentes.
+ * 
+ * Este controlador verifica las credenciales de un contribuyente (CUIT y contraseña), genera un token 
+ * de autenticación si las credenciales son válidas y configura una cookie con el token. 
+ * También incluye medidas de seguridad para proteger la cookie.
+ * 
  * @async
- * @param {Object} req - Objeto de solicitud que contiene el `cuit` y `password` del contribuyente.
- * @param {Object} res - Objeto de respuesta que devuelve el estado del login.
- * @returns {Object} - Retorna un objeto JSON con el `id`, `nombre`, `apellido`, `cuit`, `rol`, `estado` y `token` si el login es exitoso.
- * @throws {Error} - Si el contribuyente no existe o la contraseña es incorrecta, se retorna un error 404.
+ * @function loginTaxpayer
+ * @param {Object} req - Objeto de solicitud de Express, que contiene los datos del cuerpo de la solicitud.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * const req = {
+ *   body: {
+ *     cuit: { 
+ *       prefijoCuit: '20', 
+ *       numeroCuit: '12345678', 
+ *       verificadorCuit: '3' 
+ *     },
+ *     password: 'securePassword123'
+ *   }
+ * };
+ * const res = { 
+ *   status: () => ({ json: console.log, cookie: console.log }) 
+ * };
+ * loginTaxpayer(req, res);
  */
 exports.loginTaxpayer = async (req, res) => {
 
@@ -192,12 +253,26 @@ exports.loginTaxpayer = async (req, res) => {
 };
 
 /**
- * Función que maneja el cierre de sesión del usuario.
- * Elimina el token de autenticación almacenado en las cookies.
- * @route GET /auth/logout
- * @param {Object} req - Objeto de solicitud.
- * @param {Object} res - Objeto de respuesta para enviar una confirmación de cierre de sesión.
- * @returns {Object} - Un objeto JSON con un mensaje de éxito si la operación fue exitosa.
+ * Controlador para cerrar sesión.
+ * 
+ * Este controlador elimina la cookie de autenticación (`authToken`) del cliente, 
+ * asegurando que ya no pueda realizar solicitudes autenticadas. La configuración de la cookie 
+ * coincide con la utilizada en la creación para garantizar su eliminación correcta.
+ * 
+ * @function logout
+ * @param {Object} req - Objeto de solicitud de Express.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * const req = {};
+ * const res = { 
+ *   clearCookie: console.log, 
+ *   status: () => ({ json: console.log }) 
+ * };
+ * logout(req, res);
  */
 exports.logout = (req, res) => {
     res.clearCookie("authToken", {
@@ -209,17 +284,51 @@ exports.logout = (req, res) => {
 };
 
 /**
- * Función que obtiene los datos protegidos del usuario.
- * Solo se puede acceder a esta función si el usuario está autenticado.
- * @route GET /auth/protected-data
- * @param {Object} req - Objeto de solicitud que contiene los datos del usuario autenticado.
- * @param {Object} res - Objeto de respuesta que envía los datos protegidos.
- * @returns {Object} - Un objeto JSON con la información del usuario autenticado.
+ * Controlador para obtener datos protegidos.
+ * 
+ * Este controlador devuelve los datos del usuario autenticado que se almacenan en `req.user`, 
+ * generalmente configurados por un middleware de autenticación. Los datos protegidos solo son accesibles 
+ * si el usuario ha iniciado sesión correctamente.
+ * 
+ * @function getProtectedData
+ * @param {Object} req - Objeto de solicitud de Express, que contiene los datos del usuario autenticado en `req.user`.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * const req = { user: { id: 1, nombre: "Juan", rol: "admin" } };
+ * const res = { 
+ *   status: (code) => ({ json: (data) => console.log(code, data) })
+ * };
+ * getProtectedData(req, res);
+ * // Salida esperada: 200 { user: { id: 1, nombre: "Juan", rol: "admin" } }
  */
 exports.getProtectedData = (req, res) => {
     res.status(200).json({ user: req.user });
 };
 
+/**
+ * Controlador para enviar un código de recuperación de contraseña por correo electrónico.
+ * 
+ * Este controlador genera un código de recuperación de 4 dígitos, lo almacena en la base de datos junto con su tiempo de expiración,
+ * y envía un correo al usuario con el código de recuperación.
+ * 
+ * @function sendResetCode
+ * @param {Object} req - Objeto de solicitud de Express, que contiene el correo electrónico del usuario en `req.body.email`.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * 
+ * @returns {void}
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * req.body = { email: "usuario@example.com" };
+ * sendResetCode(req, res);
+ * // Salida esperada: 200 { message: "Revise su correo. El código ha sido enviado." }
+ * 
+ * @throws {Error} Si ocurre un error durante el proceso de generación, almacenamiento o envío del código.
+ */
 exports.sendResetCode = async (req, res) => {
     const { email } = req.body;
     try {
@@ -254,6 +363,20 @@ exports.sendResetCode = async (req, res) => {
     }
 };
 
+/**
+ * Controlador para restablecer la contraseña de un usuario.
+ * 
+ * Este controlador verifica un código de restablecimiento enviado previamente al correo electrónico, 
+ * valida la expiración del código, y actualiza la contraseña del usuario en la base de datos.
+ * 
+ * @function resetPassword
+ * @param {Object} req - Objeto de solicitud de Express, que contiene `email`, `code` y `newPassword` en el cuerpo de la solicitud.
+ * @param {Object} res - Objeto de respuesta de Express para enviar respuestas al cliente.
+ * 
+ * @returns {void}
+ * 
+ * @throws {Error} Si ocurre un error al verificar el código o actualizar la contraseña.
+ */
 exports.resetPassword = async (req, res) => {
     const { email, code, newPassword } = req.body;   
     try {      

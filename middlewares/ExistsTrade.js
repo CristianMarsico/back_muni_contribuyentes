@@ -2,15 +2,22 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Middleware que verifica si los codigos de comercios ya existen en la base de datos.
- * @param {object} req - El objeto de solicitud HTTP que contiene los parámetros de la ruta.
- * @param {object} res - El objeto de respuesta HTTP.
- * @param {function} next - Función para pasar el control al siguiente middleware o ruta.
- *
- * @throws {Error} Si hay un error en la consulta de la base de datos.
- *
- * Si el codigo de comerico especificado existe en la base de datos, responde con un código de estado 404 y un mensaje de error.
- * Si no existe, llama a la función `next` para permitir que la solicitud continúe.
+ * Middleware para verificar la validez de la lista de comercios proporcionada.
+ * 
+ * 1. Verifica que la lista de comercios no esté vacía y sea un array válido.
+ * 2. Valida que no haya códigos de comercio duplicados en la lista.
+ * 3. Verifica si los códigos de comercio ya están registrados en la base de datos.
+ * 
+ * Si algún comercio ya está registrado, se retorna un error indicando los códigos duplicados.
+ * Si la lista es válida y no hay comercios registrados previamente, se pasa al siguiente middleware.
+ * 
+ * @function ExistsTrade
+ * 
+ * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} res - El objeto de la respuesta.
+ * @param {Function} next - Función que pasa el control al siguiente middleware.
+ * 
+ * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
 exports.ExistsTrade = (req, res, next) => {
     const { misComercios } = req.body;

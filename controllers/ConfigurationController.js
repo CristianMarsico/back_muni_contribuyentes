@@ -3,21 +3,22 @@ const {
     getAll, updateConfiguration
 } = require('../models/ConfigurarionModel.js');
 
-
 /**
- * Controlador para obtener todas las configuraciones de la base de datos.
+ * Controlador para obtener todas las configuraciones.
  * 
- * <p>Este controlador realiza una consulta para obtener todas las configuraciones 
- * almacenadas en la base de datos y devolverlas como una respuesta JSON. Si no se 
- * encuentran configuraciones, se devuelve un error con estado 404.</p>
+ * Este controlador maneja la solicitud para recuperar todas las configuraciones almacenadas en la base de datos.
+ * Si se encuentran configuraciones, se devuelve una respuesta con el estado 200 y los datos correspondientes.
+ * Si no se encuentran configuraciones, se devuelve una respuesta con el estado 404 y un mensaje de error.
+ * En caso de error en el servidor, se devuelve una respuesta con el estado 500 y un mensaje de error.
  * 
- * @function getAll
- * @param {Object} req - El objeto de solicitud.
- * @param {Object} res - El objeto de respuesta.
- * @returns {Object} Respuesta con las configuraciones o un error.
- *  - 200: Si se encuentran configuraciones.
- *  - 404: Si no hay configuraciones disponibles.
- *  - 500: Si ocurre un error en el servidor.
+ * @param {Object} req - El objeto de solicitud que representa la solicitud HTTP.
+ * @param {Object} res - El objeto de respuesta que se utiliza para enviar la respuesta HTTP.
+ * 
+ * @returns {Object} - Respuesta JSON con el estado y los datos o mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.get('/configuraciones', getAll);
  */
 exports.getAll = async (req, res) => {
     try {
@@ -30,20 +31,22 @@ exports.getAll = async (req, res) => {
 };
 
 /**
- * Controlador para actualizar una configuración específica en la base de datos.
+ * Controlador para actualizar la configuración.
  * 
- * <p>Este controlador realiza las validaciones necesarias para asegurarse de que los 
- * datos de entrada sean correctos, actualiza la configuración en la base de datos 
- * y emite un evento WebSocket si la actualización es exitosa.</p>
+ * Este controlador maneja la solicitud para actualizar la configuración en la base de datos.
+ * Valida que los campos proporcionados sean válidos y actualiza la configuración correspondiente.
+ * Si la actualización es exitosa, emite un evento y devuelve una respuesta con el estado 200.
+ * Si ocurre un error en el servidor, se devuelve una respuesta con el estado 500 y un mensaje de error.
  * 
- * @function updateConfiguration
- * @param {Object} req - El objeto de solicitud que contiene el ID de la configuración y los datos a actualizar.
- * @param {Object} res - El objeto de respuesta.
- * @param {Object} io - El objeto de Socket.io utilizado para emitir eventos.
- * @returns {Object} Respuesta con el estado de la operación.
- *  - 200: Si la configuración fue actualizada correctamente.
- *  - 404: Si hay un error en la actualización o datos inválidos.
- *  - 500: Si ocurre un error en el servidor.
+ * @param {Object} req - El objeto de solicitud que contiene los parámetros y el cuerpo de la solicitud.
+ * @param {Object} res - El objeto de respuesta que se utiliza para devolver los resultados o un mensaje de error.
+ * @param {Object} io - El objeto de entrada/salida para emitir eventos en tiempo real.
+ * 
+ * @returns {Object} - Respuesta JSON con el estado y el mensaje correspondiente.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.put('/configuracion/:id', updateConfiguration);
  */
 exports.updateConfiguration = async (req, res, io) => {
     const { id } = req.params;

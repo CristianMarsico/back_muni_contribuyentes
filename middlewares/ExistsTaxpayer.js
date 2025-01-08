@@ -2,15 +2,19 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Middleware que verifica si el CUIT de un contribuyente ya existe en la base de datos.
- * @param {object} req - El objeto de solicitud HTTP que contiene los parámetros de la ruta.
- * @param {object} res - El objeto de respuesta HTTP.
- * @param {function} next - Función para pasar el control al siguiente middleware o ruta.
- *
- * @throws {Error} Si hay un error en la consulta de la base de datos.
- *
- * Si el cuit especificado existe en la base de datos, responde con un código de estado 404 y un mensaje de error.
- * Si no existe, llama a la función `next` para permitir que la solicitud continúe.
+ * Middleware para verificar si el CUIT del contribuyente ya está registrado.
+ * 
+ * Convierte el CUIT proporcionado a un número y verifica si ya está registrado en la base de datos.
+ * Si el CUIT ya existe, se retorna un error indicando que ya está registrado.
+ * Si no existe, se pasa al siguiente middleware.
+ * 
+ * @function ExistsTaxpayer
+ * 
+ * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} res - El objeto de la respuesta.
+ * @param {Function} next - Función que pasa el control al siguiente middleware.
+ * 
+ * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
 exports.ExistsTaxpayer = (req, res, next) => {
     const { cuit } = req.body; 

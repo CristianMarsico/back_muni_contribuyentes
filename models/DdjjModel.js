@@ -2,15 +2,30 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Obtiene las DDJJ de un contribuyente y comercio según el año y el mes (opcional).
+ * Servicio para obtener las DDJJ de un contribuyente y comercio por año y mes.
  * 
- * @function getByYearTradeMonth
- * @param {string} id_taxpayer - ID del contribuyente.
- * @param {string} id_trade - ID del comercio.
- * @param {string} year - Año de la DDJJ.
- * @param {string} [month] - Mes de la DDJJ (opcional).
- * @returns {Array} - Lista de DDJJ encontradas.
- * @throws {Error} - Error si no se encuentran DDJJ o hay un error en la consulta.
+ * Esta función realiza una consulta SQL para obtener las DDJJ correspondientes a un contribuyente y comercio 
+ * para un año y mes determinados. Si el mes está especificado, la consulta lo incluirá como filtro. Si no, 
+ * solo filtra por el año. Devuelve los resultados de la consulta o una lista vacía si no hay resultados.
+ * 
+ * @param {number} id_taxpayer - El ID del contribuyente.
+ * @param {number} id_trade - El ID del comercio.
+ * @param {number} year - El año para filtrar las DDJJ.
+ * @param {number} [month] - El mes para filtrar las DDJJ (opcional).
+ * 
+ * @returns {Array} - Una lista de las DDJJ encontradas o una lista vacía si no se encuentran resultados.
+ * 
+ * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * getByYearTradeMonth(id_taxpayer, id_trade, year, month)
+ *   .then(result => {
+ *     console.log(result); // Devuelve las DDJJ encontradas
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error si ocurre
+ *   });
  */
 exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
     return new Promise((resolve, reject) => {
@@ -37,15 +52,32 @@ exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
 };
 
 /**
- * Agrega una nueva DDJJ para un contribuyente y comercio.
+ * Servicio para agregar una nueva DDJJ (Declaración Jurada) a la base de datos.
  * 
- * @function addDdjj
- * @param {string} id_contribuyente - ID del contribuyente.
- * @param {string} id_comercio - ID del comercio.
- * @param {number} monto - Monto de la DDJJ.
- * @param {string} descripcion - Descripción de la DDJJ.
- * @returns {object} - Datos de la nueva DDJJ registrada.
- * @throws {Error} - Error si no se puede registrar la DDJJ.
+ * Esta función inserta una nueva DDJJ en la base de datos con los datos proporcionados. La función utiliza 
+ * la fecha actual y calcula la tasa a aplicar dependiendo de si la DDJJ se carga dentro o fuera del tiempo límite.
+ * 
+ * @param {number} id_contribuyente - El ID del contribuyente que presenta la DDJJ.
+ * @param {number} id_comercio - El ID del comercio para el que se presenta la DDJJ.
+ * @param {number} monto - El monto a declarar en la DDJJ.
+ * @param {string} descripcion - La descripción de la DDJJ.
+ * @param {boolean} cargada - Indica si la DDJJ fue cargada dentro del tiempo permitido.
+ * @param {number} tasa_calculada - La tasa aplicada al monto declarado.
+ * 
+ * @returns {Object} - Los datos de la DDJJ recién agregada, incluyendo el ID del contribuyente, comercio, 
+ * fecha, monto, descripción, entre otros.
+ * 
+ * @throws {Error} - Si ocurre un error durante la inserción de la DDJJ, se lanza un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * addDdjj(id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada)
+ *   .then(result => {
+ *     console.log(result); // Devuelve los datos de la nueva DDJJ
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error si ocurre
+ *   });
  */
 exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada) => {
     try {
@@ -61,6 +93,28 @@ exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, carg
     }
 };
 
+/**
+ * Servicio para obtener todas las DDJJ que no han sido enviadas a 'rafam'.
+ * 
+ * Esta función realiza una consulta SQL a la base de datos para obtener las DDJJ de contribuyentes y 
+ * comercios que no han sido enviadas a 'rafam' (es decir, aquellas donde `cargada_rafam` es false). 
+ * Los resultados se ordenan por el CUIT del contribuyente y el código del comercio.
+ * 
+ * @returns {Array} - Una lista de las DDJJ que no han sido enviadas a 'rafam', 
+ * o una lista vacía si no hay DDJJ que cumplan con esta condición.
+ * 
+ * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * getAllNoSendRafam()
+ *   .then(result => {
+ *     console.log(result); // Devuelve las DDJJ no enviadas a 'rafam'
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error si ocurre
+ *   });
+ */
 exports.getAllNoSendRafam = async () => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT c.cuit, dj.*, com.cod_comercio, com.nombre_comercio 
@@ -78,6 +132,31 @@ exports.getAllNoSendRafam = async () => {
     });
 };
 
+/**
+ * Servicio para actualizar el estado 'cargada_rafam' de una DDJJ a true.
+ * 
+ * Esta función realiza una actualización en la base de datos para cambiar el valor del campo 
+ * `cargada_rafam` a `true` para la DDJJ correspondiente a los identificadores del contribuyente, 
+ * comercio y fecha proporcionados.
+ * 
+ * @param {string} id_taxpayer - El identificador del contribuyente.
+ * @param {string} id_trade - El identificador del comercio.
+ * @param {string} id_date - La fecha de la DDJJ.
+ * 
+ * @returns {Object} - El resultado de la consulta de actualización, que contiene el número de filas afectadas.
+ * 
+ * @throws {Error} - Si ocurre un error durante la actualización de la base de datos, se lanza un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * updateStateSendRafam(id_taxpayer, id_trade, id_date)
+ *   .then(result => {
+ *     console.log(result); // Resultado de la actualización
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Manejo del error si ocurre
+ *   });
+ */
 exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
     const query = `
         UPDATE DDJJ
