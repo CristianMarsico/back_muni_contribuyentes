@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
-const { getAll, get, activeState, newTrade } = require("../controllers/TradeController.js");
+const { getAll, get, activeState, newTrade, updateTrade } = require("../controllers/TradeController.js");
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 const { ExistsNewTrade } = require("../middlewares/ExistsNewTrade.js");
 
@@ -42,6 +42,8 @@ module.exports = (io) => {
      * @returns {JSON} Mensaje de éxito o error en caso de fallo.
      */
     router.put("/trade/:id", AuthMiddleware, (req, res) => activeState(req, res, io));
+
+    router.put("/trade/:id_trade/:id_taxpayer", ExistsNewTrade, AuthMiddleware, (req, res) => updateTrade(req, res, io));
 
     router.post("/trade", ExistsNewTrade, AuthMiddleware, (req, res) => newTrade(req, res, io));
 

@@ -107,6 +107,19 @@ exports.activeState = async (id) => {
     return result.rows[0];
 };
 
+exports.updateTrade = async (id_trade, id_taxpayer, codigo_comercio, nombre_comercio, direccion_comercio) => {
+    const query = `
+        UPDATE comercio
+        SET cod_comercio = $1, nombre_comercio = $2, direccion_comercio = $3
+        WHERE id_comercio = $4 AND id_contribuyente = $5
+        RETURNING id_comercio;
+    `;
+    const values = [codigo_comercio, nombre_comercio, direccion_comercio, id_trade, id_taxpayer];
+
+    const result = await conn.query(query, values);
+    return result.rows[0];
+};
+
 /**
  * Agrega los comercios asociados a un contribuyente en la base de datos.
  * 

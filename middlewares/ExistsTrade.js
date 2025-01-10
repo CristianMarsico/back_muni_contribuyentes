@@ -23,7 +23,7 @@ exports.ExistsTrade = (req, res, next) => {
     const { misComercios } = req.body;
 
     if (!misComercios || !Array.isArray(misComercios)) {
-        return res.status(400).json({ error: 'La lista de comercios no es válida' });
+        return res.status(404).json({ error: 'La lista de comercios no es válida' });
     }
 
     // Extraer los códigos de comercio de la lista de objetos
@@ -34,7 +34,7 @@ exports.ExistsTrade = (req, res, next) => {
 
     if (codigosDuplicados.length > 0) {
         const codigosConcatenados = [...new Set(codigosDuplicados)].join(', ');
-        return res.status(400).json({
+        return res.status(404).json({
             error: `Código de comercio repetido: ${codigosConcatenados}. Quitelo de la lista.`
         });
     }
@@ -50,7 +50,7 @@ exports.ExistsTrade = (req, res, next) => {
         if (results.rows.length > 0) {
             const codigosExistentes = results.rows.map(row => row.cod_comercio);
             const codigosConcatenados = codigosExistentes.join(', ');
-            return res.status(400).json({
+            return res.status(404).json({
                 error: `Código/os ya registrado/os en la base de datos: ${codigosConcatenados}`
             });
         }

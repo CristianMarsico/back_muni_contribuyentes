@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getAll, get, activeState, newTrade
+    getAll, get, activeState, newTrade, updateTrade
 } = require('../models/TradeModel.js');
 
 /**
@@ -76,12 +76,27 @@ exports.get = async (req, res) => {
  */
 exports.activeState = async (req, res, io) => {
     const { id } = req.params;
-    if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });
+    if (!id) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
     try {
         const updatedActive = await activeState(id);
         if (!updatedActive) return res.status(404).json({ error: "El estado no se pudo cambiar" });
         io.emit('comercio-nuevo', { id });
         return res.status(200).json({ message: "El comercio ha sido dado de alta", data: updatedActive });
+    } catch (error) {
+        res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+exports.updateTrade = async (req, res, io) => {
+    const { id_trade, id_taxpayer } = req.params;
+   const{codigo_comercio, nombre_comercio, direccion_comercio} = req.body;
+   
+    if (!id_trade) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
+    try {
+        const updatedActive = await updateTrade(id_trade, id_taxpayer, codigo_comercio, nombre_comercio, direccion_comercio);
+        if (!updatedActive) return res.status(404).json({ error: "No se pudo editar" });
+        io.emit('comercio-editado', { id_trade });
+        return res.status(200).json({ message: "El comercio ha sido editado exitosamente", data: updatedActive });
     } catch (error) {
         res.status(500).json({ error: "Error de servidor" });
     }

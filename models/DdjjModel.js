@@ -94,35 +94,34 @@ exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, carg
 };
 
 /**
- * Servicio para obtener todas las DDJJ que no han sido enviadas a 'rafam'.
+ * Servicio para obtener todas las DDJJ .
  * 
  * Esta función realiza una consulta SQL a la base de datos para obtener las DDJJ de contribuyentes y 
- * comercios que no han sido enviadas a 'rafam' (es decir, aquellas donde `cargada_rafam` es false). 
+ * comercios. 
  * Los resultados se ordenan por el CUIT del contribuyente y el código del comercio.
  * 
- * @returns {Array} - Una lista de las DDJJ que no han sido enviadas a 'rafam', 
- * o una lista vacía si no hay DDJJ que cumplan con esta condición.
+ * @returns {Array} - Una lista de las DDJJ, 
+ * o una lista vacía si no hay DDJJ.
  * 
  * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
  * 
  * @example
  * // Ejemplo de uso:
- * getAllNoSendRafam()
+ * getAllDDJJ()
  *   .then(result => {
- *     console.log(result); // Devuelve las DDJJ no enviadas a 'rafam'
+ *     console.log(result); // Devuelve las DDJJ
  *   })
  *   .catch(error => {
  *     console.error(error); // Maneja el error si ocurre
  *   });
  */
-exports.getAllNoSendRafam = async () => {
+exports.getAllDDJJ = async () => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT c.cuit, dj.*, com.cod_comercio, com.nombre_comercio 
                     FROM CONTRIBUYENTE c JOIN DDJJ dj
                         USING(id_contribuyente)
                      JOIN COMERCIO com 
-                        USING(id_comercio)
-                     WHERE cargada_rafam = false
+                        USING(id_comercio)                     
                      ORDER BY c.cuit, com.cod_comercio`;
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener las ddjj' });

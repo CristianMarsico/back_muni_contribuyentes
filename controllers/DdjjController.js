@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getByYearTradeMonth, addDdjj, getAllNoSendRafam, updateStateSendRafam
+    getByYearTradeMonth, addDdjj, getAllDDJJ, updateStateSendRafam
 } = require('../models/DdjjModel.js');
 
 const {
@@ -108,9 +108,9 @@ exports.addDdjj = async (req, res, io) => {
  * // Ejemplo de uso:
  * app.get('/ddjj/no-send-rafam', getAllNoSendRafamController);
  */
-exports.getAllNoSendRafam = async (req, res) => {
+exports.getAll = async (req, res) => {
     try {
-        let response = await getAllNoSendRafam();
+        let response = await getAllDDJJ();
         if (response && response.length > 0)
             return res.status(200).json({ response });
         return res.status(404).json({ error: "Todas las ddjj han sido cargadas en rafam" });

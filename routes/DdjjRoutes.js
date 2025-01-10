@@ -2,10 +2,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { getByYearTradeMonth, addDdjj, getAllNoSendRafam, updateStateSendRafam } = require("../controllers/DdjjController.js");
+const { getByYearTradeMonth, addDdjj, getAll, updateStateSendRafam } = require("../controllers/DdjjController.js");
 const { ExistsDDJJ } = require('../middlewares/ExistsDDJJ.js');
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
-
 
 module.exports = (io) => {
     /**
@@ -36,7 +35,7 @@ module.exports = (io) => {
      */
     router.post("/ddjj", ExistsDDJJ, AuthMiddleware, (req, res) => addDdjj(req, res, io));
     
-    router.get("/ddjj", AuthMiddleware, getAllNoSendRafam);
+    router.get("/ddjj", AuthMiddleware, getAll);
 
     router.put("/ddjj/:id_taxpayer/:id_trade/:id_date", AuthMiddleware, (req, res) => updateStateSendRafam(req, res, io));
 
