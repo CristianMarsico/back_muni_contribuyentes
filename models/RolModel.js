@@ -2,19 +2,20 @@
 const conn = require('../dataBase/Connection.js');
 
 /**
- * Función para obtener el ID del rol basado en su nombre.
+ * Obtiene el ID de un rol basado en su nombre.
  * 
- * Esta función consulta la base de datos para obtener el ID del rol dado su nombre. Si se encuentra el rol, devuelve su ID.
+ * Esta función consulta la base de datos para obtener el ID del rol dado su nombre.
+ * 
+ * @param {String} rol - Nombre del rol a buscar (por ejemplo, 'admin').
+ * 
+ * @returns {Promise<Object[]>} Promesa que resuelve con un arreglo de objetos que contienen el ID del rol. 
  * Si no se encuentra el rol, devuelve un arreglo vacío.
  * 
- * @param {String} rol - El nombre del rol a buscar (por ejemplo, 'admin').
- * 
- * @returns {Promise} - Devuelve una promesa que resuelve con el ID del rol o un arreglo vacío si no se encuentra el rol.
+ * @throws {Error} "Error al obtener el rol" - Si ocurre un problema durante la consulta a la base de datos.
  * 
  * @example
- * // Ejemplo de uso:
  * getRoleByName('admin').then(role => {
- *   console.log(role); // Devuelve el ID del rol
+ *   console.log(role); // [{ id_rol: 1 }]
  * }).catch(error => {
  *   console.error(error); // Manejo de errores
  * });

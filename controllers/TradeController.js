@@ -7,17 +7,17 @@ const {
  * Controlador para obtener todos los comercios de la base de datos.
  * 
  * Este controlador maneja la solicitud para obtener todos los comercios almacenados en la base de datos. 
- * Si se encuentran comercios, se devuelve una lista con la información de todos ellos. Si no se encuentran comercios, 
- * se devuelve un error con el mensaje adecuado.
+ * Si se encuentran comercios, se devuelve una lista con la información de todos ellos. 
+ * Si no se encuentran comercios, se devuelve un error adecuado.
  * 
- * @param {Object} req - El objeto de la solicitud, que no contiene parámetros adicionales en este caso.
- * @param {Object} res - El objeto de la respuesta utilizado para devolver los comercios o un error.
+ * @param {Object} req - El objeto de la solicitud (sin parámetros adicionales en este caso).
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver los datos o un mensaje de error.
  * 
- * @returns {Object} - Respuesta con la lista de comercios o un error si no se encuentran registros.
+ * @returns {Object} Respuesta con la lista de comercios o un mensaje de error.
  * 
  * @example
  * // Ejemplo de uso:
- * app.get('/comercios', getAllComerciosController);
+ * app.get('/trade', getAllComerciosController);
  */
 exports.getAll = async (req, res) => {
     try {
@@ -34,17 +34,17 @@ exports.getAll = async (req, res) => {
  * Controlador para obtener los comercios registrados de un contribuyente.
  * 
  * Este controlador maneja la solicitud para obtener todos los comercios registrados de un contribuyente,
- * utilizando el ID del contribuyente proporcionado. Si se encuentran comercios, se devuelve una lista con 
- * la información de los comercios. Si no se encuentran comercios, se devuelve un error con el mensaje adecuado.
+ * identificados por el ID proporcionado en los parámetros de la solicitud. Si se encuentran comercios, 
+ * se devuelve una lista de ellos; de lo contrario, se envía un mensaje de error.
  * 
  * @param {Object} req - El objeto de la solicitud que contiene el parámetro `id` (ID del contribuyente).
- * @param {Object} res - El objeto de la respuesta utilizado para devolver los comercios o un error.
+ * @param {Object} res - El objeto de la respuesta para devolver los datos o mensajes de error.
  * 
- * @returns {Object} - Respuesta con la lista de comercios o un error si no se encuentran registros.
+ * @returns {Object} Respuesta con la lista de comercios o un mensaje de error.
  * 
  * @example
  * // Ejemplo de uso:
- * app.get('/comercios/:id', getComerciosController);
+ * app.get('/trade/:id', getTradeByContributor);
  */
 exports.get = async (req, res) => {
     const { id } = req.params;
@@ -87,6 +87,23 @@ exports.activeState = async (req, res, io) => {
     }
 };
 
+/**
+ * Controlador para actualizar los datos de un comercio.
+ * 
+ * Este controlador maneja la solicitud para actualizar los datos de un comercio existente. 
+ * Si los datos proporcionados son válidos y se realiza la actualización correctamente, 
+ * se emite un evento y se devuelve una respuesta de éxito. En caso contrario, se devuelve un mensaje de error.
+ * 
+ * @param {Object} req - El objeto de la solicitud, que contiene los datos del comercio a actualizar en el cuerpo de la solicitud.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver el estado de la actualización o un error.
+ * @param {Object} io - El objeto de Socket.IO utilizado para emitir el evento `comercio-editado` en caso de éxito.
+ * 
+ * @returns {Object} - Respuesta con el mensaje de éxito o error, según el resultado de la actualización.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.put('/comercio/editar/:id_trade/:id_taxpayer', updateTradeController);
+ */
 exports.updateTrade = async (req, res, io) => {
     const { id_trade, id_taxpayer } = req.params;
    const{codigo_comercio, nombre_comercio, direccion_comercio} = req.body;

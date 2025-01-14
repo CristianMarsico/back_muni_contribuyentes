@@ -4,22 +4,20 @@ const conn = require('../dataBase/Connection.js');
 /**
  * Servicio para obtener todos los comercios de la base de datos.
  * 
- * Esta función obtiene todos los comercios almacenados en la base de datos. La consulta SQL obtiene todos los 
- * registros de la tabla `comercio`. Si se encuentran comercios, se devuelve la lista de resultados. Si no se 
- * encuentran comercios, se devuelve una lista vacía.
+ * Este servicio ejecuta una consulta SQL para recuperar todos los registros de la tabla `comercio`.
+ * Si se encuentran registros, devuelve la lista de comercios. Si no, devuelve una lista vacía.
  * 
- * @returns {Array} - Una lista de objetos con la información de los comercios, o una lista vacía si no hay comercios.
+ * @returns {Promise<Array>} Una lista de objetos con la información de los comercios o una lista vacía.
  * 
- * @throws {Object} - Si ocurre un error durante la consulta, se rechaza la promesa con un error detallado.
+ * @throws {Error} Si ocurre un error en la consulta, se lanza una excepción con detalles.
  * 
  * @example
- * // Ejemplo de uso:
- * getAll()
+ * fetchAllTrades()
  *   .then(result => {
- *     console.log(result); // Muestra la lista de comercios
+ *     console.log(result); // Lista de comercios
  *   })
  *   .catch(error => {
- *     console.error(error); // Maneja los errores durante la obtención de comercios
+ *     console.error(error); // Manejo de errores
  *   });
  */
 exports.getAll = () => {
@@ -36,25 +34,20 @@ exports.getAll = () => {
 /**
  * Servicio para obtener los comercios registrados de un contribuyente desde la base de datos.
  * 
- * Esta función obtiene todos los comercios registrados de un contribuyente utilizando su ID.
- * La consulta SQL obtiene los campos `id_comercio`, `cod_comercio`, `nombre_comercio` y `estado` de la tabla `comercio`.
- * Si se encuentran comercios, se devuelve la lista de resultados. Si no se encuentran comercios, se devuelve una lista vacía.
+ * Este servicio realiza una consulta SQL para recuperar los comercios registrados asociados a un contribuyente.
+ * Los datos incluyen el ID del comercio, código del comercio, nombre del comercio y su estado. Si no se encuentran
+ * registros, devuelve una lista vacía.
  * 
- * @param {Number} id - El ID del contribuyente cuya información de comercios se desea obtener.
+ * @param {number} id - ID del contribuyente del cual se obtendrán los comercios.
  * 
- * @returns {Array} - Una lista de objetos con la información de los comercios, o una lista vacía si no hay comercios.
+ * @returns {Promise<Array>} Una lista de objetos con los datos de los comercios o una lista vacía.
  * 
- * @throws {Object} - Si ocurre un error durante la consulta, se rechaza la promesa con un error detallado.
+ * @throws {Error} Lanza una excepción si ocurre un error durante la consulta.
  * 
  * @example
- * // Ejemplo de uso:
- * get(1)
- *   .then(result => {
- *     console.log(result); // Muestra la lista de comercios del contribuyente
- *   })
- *   .catch(error => {
- *     console.error(error); // Maneja los errores durante la obtención de comercios
- *   });
+ * fetchTradesByContributor(1)
+ *   .then(result => console.log(result)) // Lista de comercios
+ *   .catch(error => console.error(error)); // Manejo de errores
  */
 exports.get = (id) => {
     return new Promise((resolve, reject) => {
@@ -107,6 +100,32 @@ exports.activeState = async (id) => {
     return result.rows[0];
 };
 
+/**
+ * Servicio para actualizar los datos de un comercio en la base de datos.
+ * 
+ * Esta función realiza una actualización en la base de datos para modificar los datos de un comercio.
+ * Se actualizan el código, el nombre y la dirección del comercio según los valores proporcionados.
+ * 
+ * @param {string} id_trade - ID del comercio que se actualizará.
+ * @param {string} id_taxpayer - ID del contribuyente al que pertenece el comercio.
+ * @param {string} codigo_comercio - Nuevo código del comercio.
+ * @param {string} nombre_comercio - Nuevo nombre del comercio.
+ * @param {string} direccion_comercio - Nueva dirección del comercio.
+ * 
+ * @returns {Object} - Devuelve el ID del comercio actualizado si la operación es exitosa.
+ * 
+ * @throws {Error} - Si ocurre un error durante la actualización, se lanza un error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * updateTrade(1, 12345, 'C124', 'Comercio ABC', 'Av. Ejemplo 456')
+ *   .then(result => {
+ *     console.log(result); // El ID del comercio actualizado
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja el error en caso de fallo
+ *   });
+ */
 exports.updateTrade = async (id_trade, id_taxpayer, codigo_comercio, nombre_comercio, direccion_comercio) => {
     const query = `
         UPDATE comercio

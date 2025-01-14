@@ -4,26 +4,20 @@ const conn = require('../dataBase/Connection.js');
 /**
  * Registra un nuevo usuario en la base de datos.
  * 
- * Esta función recibe los datos del usuario, encripta la contraseña proporcionada y la almacena en la base de datos 
- * asociada con un rol específico. Si el registro es exitoso, devuelve los datos del usuario creado, incluyendo su ID.
+ * Esta función almacena los datos de un nuevo usuario, incluyendo la contraseña encriptada y el rol asociado.
  * 
- * @param {String} usuario - El nombre de usuario a registrar.
- * @param {String} password - La contraseña encriptada del usuario.
- * @param {Number} id_rol - El ID del rol asignado al usuario.
+ * @param {String} usuario - Nombre del usuario a registrar.
+ * @param {String} password - Contraseña encriptada del usuario.
+ * @param {Number} id_rol - ID del rol asignado al usuario.
  * 
- * @returns {Object} - Devuelve un objeto con los datos del nuevo usuario, incluyendo su ID (`id_usuario`).
+ * @returns {Object} Objeto con los datos del nuevo usuario, incluyendo su ID (`id_usuario`).
  * 
- * @throws {Error} - Si ocurre un error durante el proceso de registro, se lanza un error con el mensaje correspondiente.
+ * @throws {Error} "Error al registrar usuario." - Si ocurre un problema durante la inserción en la base de datos.
  * 
  * @example
- * // Ejemplo de uso:
  * register('admin', 'hashedPassword', 1)
- *   .then(user => {
- *     console.log('Usuario registrado:', user); // Muestra los datos del usuario registrado
- *   })
- *   .catch(error => {
- *     console.error(error); // Maneja los errores durante el registro
- *   });
+ *   .then(user => console.log(user))
+ *   .catch(error => console.error(error));
  */
 exports.register = async (usuario, password, id_rol) => {
     try {
@@ -42,14 +36,15 @@ exports.register = async (usuario, password, id_rol) => {
 /**
  * Servicio para obtener todos los administradores registrados en la base de datos.
  * 
- * Esta función consulta la base de datos para obtener todos los usuarios que tienen el rol de "admin". 
- * Devuelve una lista de administradores si los encuentra, o una lista vacía si no se encuentran.
+ * Esta función realiza una consulta a la base de datos para buscar a todos los usuarios con el rol de "admin". 
+ * Si encuentra resultados, los devuelve como un array de objetos. 
+ * Si no hay coincidencias, devuelve un array vacío.
  * 
- * @param {Number} id_rol - El ID del rol de los administradores.
+ * @param {Number} id_rol - ID del rol correspondiente a los administradores.
  * 
- * @returns {Promise<Array>} - Una promesa que resuelve con un array de administradores encontrados en la base de datos.
+ * @returns {Promise<Object>} Promesa que resuelve con un objeto que contiene la lista de administradores o un objeto vacío si no se encuentran.
  * 
- * @throws {Object} - Si ocurre un error durante la consulta, se lanza un objeto con el mensaje de error.
+ * @throws {Object} Objeto de error con el estado HTTP y un mensaje si ocurre un problema durante la consulta.
  * 
  * @example
  * // Ejemplo de uso:
@@ -73,17 +68,18 @@ exports.getAllAdmins = (id_rol) => {
 };
 
 /**
- * Servicio para eliminar un administrador de la base de datos.
+ * Servicio para eliminar un usuario de la base de datos.
  * 
  * Esta función elimina un usuario de la base de datos basado en su ID. Si la eliminación es exitosa, 
- * devuelve un valor `true`, de lo contrario, devuelve `false` si no se encuentra el usuario para eliminar.
+ * devuelve `true`; de lo contrario, devuelve `false` si no se encuentra el usuario para eliminar.
  * 
- * @param {Number} id - El ID del administrador a eliminar.
+ * @param {Number} id - El ID del usuario a eliminar.
  * @param {Object} res - El objeto de la respuesta, utilizado para manejar los errores dentro de la función.
  * 
- * @returns {Promise<Boolean>} - Una promesa que resuelve a `true` si se eliminó el usuario, o `false` si no se encontró el usuario.
+ * @returns {Promise<Boolean>} Una promesa que resuelve a `true` si se eliminó el usuario, 
+ * o `false` si no se encontró el usuario.
  * 
- * @throws {Object} - Si ocurre un error durante la consulta, la promesa se rechaza con el error.
+ * @throws {Object} Si ocurre un error durante la consulta, la promesa se rechaza con el error.
  * 
  * @example
  * // Ejemplo de uso:
@@ -115,18 +111,18 @@ exports.deleteUser = (id, res) => {
  * Servicio para actualizar la contraseña de un usuario en la base de datos.
  * 
  * Esta función actualiza la contraseña de un usuario específico basado en su ID.
- * Se utiliza bcrypt para encriptar la contraseña antes de actualizarla en la base de datos.
+ * La contraseña proporcionada ya debe estar encriptada utilizando bcrypt.
  * 
  * @param {Number} id - El ID del usuario cuya contraseña se actualizará.
- * @param {String} pass - La nueva contraseña que se encriptará.
+ * @param {String} pass - La nueva contraseña ya encriptada.
  * 
- * @returns {Object} - El resultado de la consulta SQL.
+ * @returns {Object} El resultado de la consulta SQL.
  * 
- * @throws {Error} - Si ocurre un error en la base de datos, se lanza una excepción.
+ * @throws {Error} Si ocurre un error en la base de datos, se lanza una excepción.
  * 
  * @example
  * // Ejemplo de uso:
- * updatePass(1, 'nueva_contraseña')
+ * updatePass(1, 'hashedPassword')
  *   .then(result => {
  *     if (result.rowCount > 0) {
  *       console.log("Contraseña actualizada con éxito.");

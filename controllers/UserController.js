@@ -12,20 +12,23 @@ const bcrypt = require('bcrypt');
 /**
  * Controlador para registrar un nuevo administrador.
  * 
- * Este controlador permite registrar un nuevo usuario con un rol de administrador. Verifica si las contraseñas coinciden,
- * encripta la contraseña antes de almacenarla, y asigna el rol adecuado al usuario. Luego, emite un evento de WebSocket 
- * con los datos del nuevo administrador y responde con un mensaje de éxito.
+ * Este controlador valida los datos, encripta la contraseña, registra al usuario en la base de datos, 
+ * y emite un evento en tiempo real con los datos del nuevo administrador.
  * 
- * @param {Object} req - El objeto de solicitud HTTP, que contiene el cuerpo con los datos del nuevo usuario (`usuario`, `password`, `rePassword`).
- * @param {Object} res - El objeto de respuesta HTTP, utilizado para devolver mensajes de éxito o error.
- * @param {Object} io - El objeto de WebSocket, utilizado para emitir el evento `new-admin` con los datos del nuevo administrador.
+ * @param {Object} req - Objeto de solicitud HTTP con los datos del nuevo administrador (`usuario`, `password`, `rePassword`).
+ * @param {Object} res - Objeto de respuesta HTTP para devolver mensajes de éxito o error.
+ * @param {Object} io - Objeto de WebSocket para emitir el evento `new-admin` con los datos del nuevo administrador.
  * 
- * @returns {Object} - Respuesta con un mensaje de éxito y los datos del nuevo administrador o un mensaje de error si no se pudo registrar.
+ * @returns {Object} Respuesta con un mensaje de éxito y los datos del nuevo administrador o un mensaje de error si ocurre un fallo.
+ * 
+ * @throws {Error} "Las contraseñas no coinciden." - Si las contraseñas no coinciden.
+ * @throws {Error} "No se pudo registrar el usuario." - Si ocurre un problema al registrar al usuario.
+ * @throws {Error} "Error en el servidor." - Si ocurre un error inesperado en el servidor.
  * 
  * @example
- * // Ejemplo de uso:
+ * // Uso en un endpoint
  * app.post('/register', register, (req, res) => {
- *   // Lógica después del registro
+ *   console.log('Registro exitoso');
  * });
  */
 exports.register = async (req, res, io) => {
@@ -57,17 +60,20 @@ exports.register = async (req, res, io) => {
 /**
  * Controlador para obtener todos los administradores registrados en la base de datos.
  * 
- * Este controlador maneja la solicitud para obtener todos los usuarios con el rol de "admin". Si se encuentran administradores, 
- * los devuelve en la respuesta con un código de estado 200. Si no se encuentran administradores registrados, 
- * se devuelve un mensaje de error con un código de estado 404.
+ * Este controlador maneja la lógica para buscar todos los usuarios con el rol de "admin". 
+ * Si se encuentran administradores registrados, se devuelve un código de estado 200 junto con los datos. 
+ * Si no se encuentran administradores, se devuelve un código de estado 404 con un mensaje de error.
  * 
- * @param {Object} req - El objeto de la solicitud.
- * @param {Object} res - El objeto de la respuesta.
+ * @param {Object} req - Objeto de solicitud HTTP.
+ * @param {Object} res - Objeto de respuesta HTTP.
  * 
- * @returns {Object} - Respuesta con los datos de los administradores o un error si no se encuentran administradores.
+ * @returns {Object} Respuesta con los datos de los administradores o un mensaje de error.
+ * 
+ * @throws {Error} "Aún no se han registrado administradores." - Si no hay administradores en la base de datos.
+ * @throws {Error} "Error de servidor." - Si ocurre un error durante el proceso.
  * 
  * @example
- * // Ejemplo de uso:
+ * // Uso en una ruta:
  * app.get('/admins', getAllAdminsController);
  */
 exports.getAllAdmins = async (req, res) => {
@@ -84,17 +90,17 @@ exports.getAllAdmins = async (req, res) => {
 };
 
 /**
- * Controlador para eliminar un administrador de la base de datos.
+ * Controlador para eliminar un usuario de la base de datos.
  * 
- * Este controlador maneja la solicitud para eliminar un administrador basado en su ID. 
- * Si la eliminación es exitosa, se emite un evento con la ID del administrador eliminado y 
- * se devuelve un mensaje de éxito. Si no se puede eliminar el administrador, se devuelve un error.
+ * Este controlador maneja la solicitud para eliminar un usuario basado en su ID.
+ * Si la eliminación es exitosa, se emite un evento con la ID del usuario eliminado y 
+ * se devuelve un mensaje de éxito. Si no se puede eliminar el usuario, se devuelve un error.
  * 
- * @param {Object} req - El objeto de la solicitud.
+ * @param {Object} req - El objeto de la solicitud que contiene el ID del usuario a eliminar.
  * @param {Object} res - El objeto de la respuesta.
  * @param {Object} io - El objeto de la conexión de socket.io para emitir eventos.
  * 
- * @returns {Object} - Respuesta con un mensaje de éxito o un error.
+ * @returns {JSON} Respuesta con un mensaje de éxito o un error.
  * 
  * @example
  * // Ejemplo de uso:
@@ -124,11 +130,11 @@ exports.deleteUser = async (req, res, io) => {
  * @param {Object} req - El objeto de la solicitud que contiene los parámetros `id` y `pass`.
  * @param {Object} res - El objeto de la respuesta utilizado para devolver el mensaje de éxito o error.
  * 
- * @returns {Object} - Respuesta con un mensaje de éxito o un error.
+ * @returns {JSON} Respuesta con un mensaje de éxito o un error.
  * 
  * @example
  * // Ejemplo de uso:
- * app.put('/user/password/:id/:pass', updatePassController);
+ * app.put('/user/:id/:pass', updatePassController);
  */
 exports.updatePass = async (req, res) => {
     const { id, pass } = req.params;

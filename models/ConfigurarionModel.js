@@ -32,8 +32,26 @@ exports.getAll = () => {
     });
 };
 
-
-
+/**
+ * Servicio para actualizar la configuración en la base de datos.
+ * 
+ * Este servicio realiza una consulta SQL para actualizar los parámetros de configuración 
+ * en la base de datos según el ID de la configuración proporcionado.
+ * 
+ * @param {number} id - ID de la configuración que se actualizará.
+ * @param {number} fecha_limite_ddjj - Fecha límite para la declaración jurada.
+ * @param {number} monto_ddjj_defecto - Monto por defecto de la declaración jurada.
+ * @param {number} tasa_actual - Tasa de la configuración.
+ * 
+ * @returns {Object} - El resultado de la operación de actualización.
+ * 
+ * @throws {Error} Lanza una excepción si ocurre un error durante la consulta.
+ * 
+ * @example
+ * updateConfiguration(1, 31, 1000, 0.2)
+ *   .then(result => console.log(result)) // Resultado de la actualización
+ *   .catch(error => console.error(error)); // Manejo de errores
+ */
 exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual) => {
     const query = `
         UPDATE configuracion
