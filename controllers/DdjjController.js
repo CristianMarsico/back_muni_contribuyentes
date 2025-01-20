@@ -64,9 +64,6 @@ exports.addDdjj = async (req, res, io) => {
         const diaActual = new Date().getDate();
         const diaLimite = configuracion[0].fecha_limite_ddjj;
 
-        // const diaActual = 28
-        // const diaLimite = 27
-
         let cargadaEnTiempo = true;
 
         let montoFinal = monto;
@@ -162,10 +159,15 @@ exports.updateStateSendRafam = async (req, res, io) => {
 
 exports.rectificar = async (req, res, io) => {
     const { id_taxpayer, id_trade, id_date } = req.params;
-    const { monto } = req.body;
+    const { monto, mes, fecha } = req.body;   
 
-    if (!id_taxpayer || !id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
+    const fechaDdjj = fecha;
+    const fechaRectificacion = new Date();
+    let diferenciaDias = calcularDiasEntreFechas(fechaDdjj, fechaRectificacion)
+
+    const fechaFormateada = fechaRectificacion.toISOString().split("T")[0];   
     
+    if (!id_taxpayer || !id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
     
     try {
         const configuracion = await getAll();
@@ -173,7 +175,7 @@ exports.rectificar = async (req, res, io) => {
         let montoFinal = monto;
         let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
 
-        let rectificada = await rectificar(id_taxpayer, id_trade, id_date, monto, tasa_calculada);
+        let rectificada = await rectificar(id_taxpayer, id_trade, id_date, monto, tasa_calculada, mes, fechaFormateada, diferenciaDias);
 
         if (rectificada.rowCount > 0) {
             io.emit('rectificada', {
@@ -192,3 +194,13 @@ exports.rectificar = async (req, res, io) => {
         return res.status(500).json({ error: "Error de servidor" });
     }
 };
+
+function calcularDiasEntreFechas(fechaInicio, fechaFin) {
+    // Convertir las fechas a milisegundos
+    const milisegundosPorDia = 1000 * 60 * 60 * 24; // Un día en milisegundos
+    const inicio = new Date(new Date(fechaInicio).setHours(0, 0, 0, 0)).getTime();
+    const fin = new Date(new Date(fechaFin).setHours(0, 0, 0, 0)).getTime();
+    // Calcular la diferencia y convertir a días
+    const diferencia = fin - inicio;
+    return Math.round(diferencia / milisegundosPorDia);
+}

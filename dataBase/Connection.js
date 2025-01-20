@@ -19,6 +19,21 @@ const conn = new Pool({
     ssl: process.env.MODO === 'produccion'
 });
 
+function calcularDiasEntreFechas(fechaInicio, fechaFin) {
+    // Convertir las fechas a milisegundos
+    const milisegundosPorDia = 1000 * 60 * 60 * 24; // Un día en milisegundos
+    const inicio = new Date(fechaInicio).getTime();
+    const fin = new Date(fechaFin).getTime();
+
+    // Calcular la diferencia y convertir a días
+    const diferencia = fin - inicio;
+    return Math.round(diferencia / milisegundosPorDia);
+}
+
+// Ejemplo de uso:
+const fechaInicio = "2025-01-01";
+const fechaFin = "2025-01-20";
+console.log(calcularDiasEntreFechas(fechaInicio, fechaFin)); // Resultado: 19
 /**
  * Función para inicializar los roles por defecto en la base de datos.
  * Si los roles no existen, los inserta.
@@ -173,12 +188,19 @@ const insertarDDJJFaltantes = async () => {
             return true;
         }
 
+        const meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
         const today = new Date();
+        const nombreMes = meses[today.getMonth()];
+
         for (const { id_contribuyente, id_comercio } of rows) {
             await conn.query(`
                 INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam, rectificada)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            `, [id_contribuyente, id_comercio, today, config[0].monto_defecto, "Necesita Rectificar", false, 0, false, false]);
+            `, [id_contribuyente, id_comercio, today, config[0].monto_defecto, `Necesita Rectificar el mes de ${nombreMes}`, false, 0, false, false]);
         }
 
         return false;

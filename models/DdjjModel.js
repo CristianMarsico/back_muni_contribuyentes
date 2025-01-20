@@ -175,7 +175,7 @@ exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
     }
 };
 
-exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa) => {
+exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias) => {
     const query = `
         UPDATE DDJJ
         SET monto = $1, rectificada = $2, descripcion = $3, tasa_calculada = $4
@@ -184,7 +184,7 @@ exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa) => {
             AND fecha = $7
         ;
     `;
-    const values = [monto, true, "Rectificada", tasa, id_taxpayer, id_trade, id_date];
+    const values = [monto, true, `Rectificada en ${mes}. Fecha Rectificacion ${fechaRectificacion} (pasaron ${diferenciaDias} días)`, tasa, id_taxpayer, id_trade, id_date];
 
     try {
         const result = await conn.query(query, values);
