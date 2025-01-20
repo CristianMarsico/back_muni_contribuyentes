@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getAll, updateConfiguration
+    getAll, updateConfigurationValues, updateConfigurationInfo
 } = require('../models/ConfigurarionModel.js');
 
 /**
@@ -48,10 +48,10 @@ exports.getAll = async (req, res) => {
  * // Ejemplo de uso:
  * app.put('/configuracion/:id', updateConfiguration);
  */
-exports.updateConfiguration = async (req, res, io) => {
+exports.updateConfigurationValues = async (req, res, io) => {
     const { id } = req.params;
     const { fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual } = req.body;
-   
+
     if (fecha_limite_ddjj > 31)
         return res.status(404).json({ error: 'La fecha no debe superar el dia 31' });
 
@@ -66,7 +66,7 @@ exports.updateConfiguration = async (req, res, io) => {
 
     try {
         // Llamar al modelo para actualizar la configuración
-        const result = await updateConfiguration(
+        const result = await updateConfigurationValues(
             id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual
         );
         // Si la actualización fue exitosa
@@ -76,8 +76,51 @@ exports.updateConfiguration = async (req, res, io) => {
         } else {
             return res.status(404).json({ error: 'Error al actualizar la configuración' });
         }
-    } catch (error) {     
+    } catch (error) {
         return res.status(500).json({ error: 'Hubo un error al actualizar la configuración' });
+    }
+};
+
+/**
+ * Controlador para actualizar la configuración de informacion municipal.
+ * 
+ * Este controlador maneja la solicitud para actualizar la configuración en la base de datos.
+ * Valida que los campos proporcionados sean válidos y actualiza la configuración correspondiente.
+ * Si la actualización es exitosa, emite un evento y devuelve una respuesta con el estado 200.
+ * Si ocurre un error en el servidor, se devuelve una respuesta con el estado 500 y un mensaje de error.
+ * 
+ * @param {Object} req - El objeto de solicitud que contiene los parámetros y el cuerpo de la solicitud.
+ * @param {Object} res - El objeto de respuesta que se utiliza para devolver los resultados o un mensaje de error.
+ * @param {Object} io - El objeto de entrada/salida para emitir eventos en tiempo real.
+ * 
+ * @returns {Object} - Respuesta JSON con el estado y el mensaje correspondiente.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.put('/configuracion/:id', updateConfiguration);
+ */
+exports.updateConfigurationInfo = async (req, res, io) => {
+    const { id } = req.params;
+    const { whatsapp, email, telefono, direccion, facebook, instagram } = req.body;
+
+    // Verificar que los campos sean válidos
+    if (!whatsapp || !email || !telefono || !direccion || !facebook || !instagram) {
+        return res.status(404).json({ error: 'Todos los campos son obligatorios' });
+    }
+    try {
+        // Llamar al modelo para actualizar la configuración
+        const result = await updateConfigurationInfo(
+            id, whatsapp, email, telefono, direccion, facebook, instagram
+        );
+        // Si la actualización fue exitosa
+        if (result.rowCount > 0) {
+            io.emit('new-info', { result });
+            return res.status(200).json({ message: 'Información actualizada correctamente' });
+        } else {
+            return res.status(404).json({ error: 'Error al actualizar la información' });
+        }
+    } catch (error) {
+        return res.status(500).json({ error: 'Hubo un error al actualizar la información' });
     }
 };
 

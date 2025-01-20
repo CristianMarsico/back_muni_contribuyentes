@@ -52,7 +52,7 @@ exports.getAll = () => {
  *   .then(result => console.log(result)) // Resultado de la actualización
  *   .catch(error => console.error(error)); // Manejo de errores
  */
-exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual) => {
+exports.updateConfigurationValues = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual) => {
     const query = `
         UPDATE configuracion
         SET 
@@ -61,11 +61,53 @@ exports.updateConfiguration = async (id, fecha_limite_ddjj, monto_ddjj_defecto, 
             monto_defecto = $3           
         WHERE id_configuracion = $4;
     `;
-    const values = [fecha_limite_ddjj, tasa_actual,monto_ddjj_defecto, id];
+    const values = [fecha_limite_ddjj, tasa_actual, monto_ddjj_defecto, id];
     try {
-        const result = await conn.query(query, values);      
-        return result;               
-    } catch (err) {       
+        const result = await conn.query(query, values);
+        return result;
+    } catch (err) {
+        throw new Error('Error en la base de datos');
+    }
+};
+
+/**
+ * Servicio para actualizar la configuración en la base de datos.
+ * 
+ * Este servicio realiza una consulta SQL para actualizar los parámetros de configuración 
+ * en la base de datos según el ID de la configuración proporcionado.
+ * 
+ * @param {number} id - ID de la configuración que se actualizará.
+ * @param {number} whatsapp - Número de whatsapp.
+ * @param {string} email - Email del municipio.
+ * @param {number} telefono - Teléfono fijo.
+ * @param {string} direccion - Dirección de oficina.
+ * 
+ * @returns {Object} - El resultado de la operación de actualización.
+ * 
+ * @throws {Error} Lanza una excepción si ocurre un error durante la consulta.
+ * 
+ * @example
+ * updateConfigurationInfo(2262556556, example@gmial.com, 2262343434, Italia 64)
+ *   .then(result => console.log(result)) // Resultado de la actualización
+ *   .catch(error => console.error(error)); // Manejo de errores
+ */
+exports.updateConfigurationInfo = async (id, whatsapp, email, telefono, direccion, facebook, instagram) => {
+    const query = `
+        UPDATE configuracion
+        SET 
+            whatsapp = $1,
+            email = $2,
+            telefono = $3,
+            direccion = $4,
+            facebook = $5,
+            instagram = $6      
+        WHERE id_configuracion = $7;
+    `;
+    const values = [whatsapp, email, telefono, direccion, facebook, instagram, id];
+    try {
+        const result = await conn.query(query, values);
+        return result;
+    } catch (err) {
         throw new Error('Error en la base de datos');
     }
 };

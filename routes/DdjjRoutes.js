@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { getByYearTradeMonth, addDdjj, getAll, updateStateSendRafam } = require("../controllers/DdjjController.js");
+const { getByYearTradeMonth, addDdjj, getAll, updateStateSendRafam, rectificar } = require("../controllers/DdjjController.js");
 const { ExistsDDJJ } = require('../middlewares/ExistsDDJJ.js');
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 
@@ -92,6 +92,8 @@ module.exports = (io) => {
      *   .then(data => console.log(data));
      */
     router.put("/ddjj/:id_taxpayer/:id_trade/:id_date", AuthMiddleware, (req, res) => updateStateSendRafam(req, res, io));
+    
+    router.put("/rectificar/:id_taxpayer/:id_trade/:id_date", AuthMiddleware, (req, res) => rectificar(req, res, io));
 
     return router;
 };

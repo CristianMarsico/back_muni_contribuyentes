@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getByYearTradeMonth, addDdjj, getAllDDJJ, updateStateSendRafam
+    getByYearTradeMonth, addDdjj, getAllDDJJ, updateStateSendRafam, rectificar
 } = require('../models/DdjjModel.js');
 
 const {
@@ -74,10 +74,8 @@ exports.addDdjj = async (req, res, io) => {
 
 
         //EN CASO DE QUE SUPERE LA FECHA
-        if (diaActual > diaLimite) {
-            cargadaEnTiempo = false;
-            //montoFinal = configuracion[0].monto_defecto; //2000 PESOS
-            tasa_calculada = montoFinal * configuracion[0].tasa_default;
+        if (diaActual >= diaLimite) {
+            return res.status(404).json({ error: 'Su DDJJ ha sido cargada por el sistema. Debe RECTIFICAR' });
         }
 
         //AGREGO LA DDJJ
@@ -162,3 +160,35 @@ exports.updateStateSendRafam = async (req, res, io) => {
     }
 };
 
+exports.rectificar = async (req, res, io) => {
+    const { id_taxpayer, id_trade, id_date } = req.params;
+    const { monto } = req.body;
+
+    if (!id_taxpayer || !id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
+    
+    
+    try {
+        const configuracion = await getAll();
+        if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
+        let montoFinal = monto;
+        let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
+
+        let rectificada = await rectificar(id_taxpayer, id_trade, id_date, monto, tasa_calculada);
+
+        if (rectificada.rowCount > 0) {
+            io.emit('rectificada', {
+                id_taxpayer,
+                id_trade,
+                id_date
+            });
+            return res.status(200).json({
+                message: "La DDJJ ha sido rectificada con éxito",
+                data: rectificada
+            });
+        } else {
+            return res.status(404).json({ error: "La ddjj no se pudo rectificar" });
+        }
+    } catch (error) {
+        return res.status(500).json({ error: "Error de servidor" });
+    }
+};

@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
+const schedule = require('node-schedule');
 
 /**
  * Conexión a la base de datos utilizando la librería `pg`.
@@ -18,7 +19,6 @@ const conn = new Pool({
     ssl: process.env.MODO === 'produccion'
 });
 
-
 /**
  * Función para inicializar los roles por defecto en la base de datos.
  * Si los roles no existen, los inserta.
@@ -28,7 +28,7 @@ const conn = new Pool({
  * @returns {void} - No devuelve nada, solo realiza la inicialización de los roles.
  */
 const inizializeRolesDefault = async () => {
-    let rol = ['super_admin','admin', 'user'];
+    let rol = ['super_admin', 'admin', 'user'];
     try {
         for (let r of rol) {
             let results = await conn.query("SELECT * FROM rol WHERE rol = $1", [r]);
@@ -137,8 +137,8 @@ const initializeDataConfigDefault = async () => {
             return;
         }
         // Crear fechas por defecto
-        const sql = `insert into configuracion (id_configuracion, fecha_limite_ddjj, tasa_actual, monto_defecto, tasa_default)
-                                                    values (1, 26, 0.08, 9999, 0.10) `;
+        const sql = `insert into configuracion (id_configuracion, fecha_limite_ddjj, tasa_actual, monto_defecto, whatsapp, email, telefono, direccion, facebook, instagram)
+                                                    values (1, 27, 0.08, 9999, 2262545454, 'info@municipio.gob.ar', 2261445454, 'Italia 67', 'www.facebook.com/municipalidadloberia', 'www.instagram.com/muniloberia') `;
         await conn.query(sql);
         console.log(`Configuraciones generales cargadas`);
     } catch (error) {
@@ -147,18 +147,111 @@ const initializeDataConfigDefault = async () => {
 };
 
 /**
- * Función para inicializar todos los valores por defecto en la base de datos.
- * 
- * Esta función llama a todas las funciones de inicialización anteriores para crear roles, usuarios, fechas y configuraciones por defecto.
- * 
- * @async
- * @function initializeValues
+ * Inserta declaraciones juradas faltantes en lotes.
+ * Retorna `true` si ya no hay más por insertar.
+ */
+const insertarDDJJFaltantes = async () => {
+    try {
+        const { rows: config } = await conn.query("SELECT monto_defecto FROM configuracion LIMIT 1");
+        if (!config.length) throw new Error("No se encontró el monto_defecto en la configuración.");
+
+        const { rows } = await conn.query(`
+            SELECT c.id_contribuyente, com.id_comercio
+            FROM contribuyente c
+            JOIN comercio com 
+                ON c.id_contribuyente = com.id_contribuyente
+            LEFT JOIN ddjj d 
+                ON com.id_comercio = d.id_comercio 
+                AND c.id_contribuyente = d.id_contribuyente
+            WHERE d.id_comercio IS NULL
+                AND com.estado = true
+            LIMIT 100;
+        `);
+
+        if (rows.length === 0) {
+            console.log("no hay ddjj para rectificar")
+            return true;
+        }
+
+        const today = new Date();
+        for (const { id_contribuyente, id_comercio } of rows) {
+            await conn.query(`
+                INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam, rectificada)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `, [id_contribuyente, id_comercio, today, config[0].monto_defecto, "Necesita Rectificar", false, 0, false, false]);
+        }
+
+        return false;
+    } catch (error) {
+        console.error("Error insertando DDJJ:", error.message);
+        return false;
+    }
+};
+
+/**
+ * Ejecuta la inserción de DDJJ recursivamente hasta completar todas.
+ */
+const ejecutarDDJJRecursivo = async () => {
+    try {
+        let hayPendientes;
+        do {
+            hayPendientes = await insertarDDJJFaltantes();
+            if (!hayPendientes) await new Promise(res => setTimeout(res, 60000)); // Espera 1 minuto
+        } while (!hayPendientes);
+        console.log("Todas las DDJJ insertadas.");
+    } catch (error) {
+        console.error("Error en ejecución recursiva:", error.message);
+    }
+};
+
+/**
+ * Programa la tarea de DDJJ el día configurado.
+ */
+const programarTareaDDJJ = async () => {
+    try {
+        const { rows } = await conn.query("SELECT fecha_limite_ddjj FROM configuracion LIMIT 1");
+        if (!rows.length) throw new Error("No se encontró la fecha límite.");
+
+        const fechaLimite = rows[0].fecha_limite_ddjj;
+        schedule.scheduleJob(`0 0 ${fechaLimite} * *`, ejecutarDDJJRecursivo);
+        console.log(`Tarea programada para el día ${fechaLimite} de cada mes.`);
+    } catch (error) {
+        console.error("Error programando la tarea:", error.message);
+    }
+};
+
+/**
+ * Verifica si la fecha límite ya pasó y ejecuta las DDJJ inmediatamente si es necesario.
+ */
+const verificarYEjecutarDDJJ = async () => {
+    try {
+        const { rows } = await conn.query("SELECT fecha_limite_ddjj FROM configuracion LIMIT 1");
+        if (!rows.length) throw new Error("No se encontró la fecha límite.");
+
+        const fechaLimite = rows[0].fecha_limite_ddjj;
+        const today = new Date().getDate();
+
+        if (today >= fechaLimite) {
+            console.log("La fecha límite ya pasó este mes. Ejecutando DDJJ ahora...");
+            await ejecutarDDJJRecursivo();
+        }
+    } catch (error) {
+        console.error("Error al verificar ejecución:", error.message);
+    }
+};
+
+/**
+ * Inicializa todos los valores y verifica si se deben ejecutar las DDJJ.
  */
 const initializeValues = async () => {
-    await inizializeRolesDefault();  // Inicializar roles
-    await initializeUserDefault();// Inicializar usuario por defecto
-    await initializeFechasDefault();// Inicializar fechas por defecto
+    await inizializeRolesDefault();
+    await initializeUserDefault();
+    await initializeFechasDefault();
     await initializeDataConfigDefault();
+
+    await verificarYEjecutarDDJJ(); // Solo ejecuta DDJJ si ya pasó la fecha límite
+    await programarTareaDDJJ(); // Programa la ejecución futura
 };
+
 initializeValues();
 module.exports = conn;

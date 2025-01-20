@@ -82,8 +82,8 @@ exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
 exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada) => {
     try {
         const query = `
-      INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam)
-      VALUES ($1, $2, CURRENT_DATE, $3, $4, $5, $6, false)
+      INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam, rectificada)
+      VALUES ($1, $2, CURRENT_DATE, $3, $4, $5, $6, false, false)
       RETURNING id_contribuyente, id_comercio, fecha, monto, descripcion
     `;
         const result = await conn.query(query, [id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada]);
@@ -166,6 +166,25 @@ exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
         ;
     `;
     const values = [id_taxpayer, id_trade, id_date];
+
+    try {
+        const result = await conn.query(query, values);
+        return result;
+    } catch (err) {
+        throw new Error('Error en la base de datos');
+    }
+};
+
+exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa) => {
+    const query = `
+        UPDATE DDJJ
+        SET monto = $1, rectificada = $2, descripcion = $3, tasa_calculada = $4
+        WHERE id_contribuyente = $5
+            AND id_comercio = $6
+            AND fecha = $7
+        ;
+    `;
+    const values = [monto, true, "Rectificada", tasa, id_taxpayer, id_trade, id_date];
 
     try {
         const result = await conn.query(query, values);
