@@ -19,21 +19,6 @@ const conn = new Pool({
     ssl: process.env.MODO === 'produccion'
 });
 
-function calcularDiasEntreFechas(fechaInicio, fechaFin) {
-    // Convertir las fechas a milisegundos
-    const milisegundosPorDia = 1000 * 60 * 60 * 24; // Un día en milisegundos
-    const inicio = new Date(fechaInicio).getTime();
-    const fin = new Date(fechaFin).getTime();
-
-    // Calcular la diferencia y convertir a días
-    const diferencia = fin - inicio;
-    return Math.round(diferencia / milisegundosPorDia);
-}
-
-// Ejemplo de uso:
-const fechaInicio = "2025-01-01";
-const fechaFin = "2025-01-20";
-console.log(calcularDiasEntreFechas(fechaInicio, fechaFin)); // Resultado: 19
 /**
  * Función para inicializar los roles por defecto en la base de datos.
  * Si los roles no existen, los inserta.
@@ -162,8 +147,19 @@ const initializeDataConfigDefault = async () => {
 };
 
 /**
- * Inserta declaraciones juradas faltantes en lotes.
- * Retorna `true` si ya no hay más por insertar.
+ * Inserta las DDJJ faltantes para los contribuyentes y comercios que no tienen registros asociados.
+ * 
+ * Esta función consulta la configuración para obtener el `monto_defecto`, verifica los comercios activos 
+ * que no tienen una DDJJ registrada, y los inserta en la base de datos con un estado inicial.
+ * 
+ * @async
+ * @returns {Promise<boolean>} - Devuelve `true` si no hay DDJJ faltantes, de lo contrario `false`.
+ * @throws {Error} - Si ocurre un error al consultar o insertar datos en la base de datos.
+ * 
+ * @example
+ * insertarDDJJFaltantes()
+ *   .then((resultado) => console.log(resultado ? "Sin DDJJ faltantes" : "DDJJ pendientes insertadas"))
+ *   .catch((error) => console.error(error.message));
  */
 const insertarDDJJFaltantes = async () => {
     try {
@@ -211,7 +207,16 @@ const insertarDDJJFaltantes = async () => {
 };
 
 /**
- * Ejecuta la inserción de DDJJ recursivamente hasta completar todas.
+ * Ejecuta el proceso recursivo para insertar DDJJ faltantes hasta que no haya pendientes.
+ * 
+ * Esta función llama a `insertarDDJJFaltantes` de forma recursiva con un intervalo de 1 minuto 
+ * entre cada ejecución hasta que todas las DDJJ hayan sido insertadas.
+ * 
+ * @async
+ * @returns {Promise<void>} - No devuelve un valor, pero registra mensajes en consola sobre el estado del proceso.
+ * 
+ * @example
+ * ejecutarDDJJRecursivo();
  */
 const ejecutarDDJJRecursivo = async () => {
     try {
@@ -227,7 +232,19 @@ const ejecutarDDJJRecursivo = async () => {
 };
 
 /**
- * Programa la tarea de DDJJ el día configurado.
+ * Programa una tarea recurrente para insertar DDJJ faltantes en una fecha específica cada mes.
+ * 
+ * La función consulta la fecha límite configurada y utiliza un programador de tareas 
+ * para ejecutar el proceso en esa fecha de cada mes.
+ * 
+ * @async
+ * @returns {Promise<void>} - No devuelve un valor, pero registra mensajes en consola sobre el estado de la programación.
+ * @throws {Error} - Si no se encuentra la fecha límite en la configuración.
+ * 
+ * @example
+ * programarTareaDDJJ()
+ *   .then(() => console.log("Tarea programada con éxito"))
+ *   .catch((error) => console.error(error.message));
  */
 const programarTareaDDJJ = async () => {
     try {
@@ -243,7 +260,19 @@ const programarTareaDDJJ = async () => {
 };
 
 /**
- * Verifica si la fecha límite ya pasó y ejecuta las DDJJ inmediatamente si es necesario.
+ * Verifica si la fecha límite de DDJJ ya pasó y ejecuta el proceso si es necesario.
+ * 
+ * Consulta la fecha límite configurada y, si el día actual es posterior o igual a esa fecha, 
+ * ejecuta el proceso para insertar DDJJ faltantes.
+ * 
+ * @async
+ * @returns {Promise<void>} - No devuelve un valor, pero registra mensajes en consola sobre el estado de la verificación y ejecución.
+ * @throws {Error} - Si no se encuentra la fecha límite en la configuración.
+ * 
+ * @example
+ * verificarYEjecutarDDJJ()
+ *   .then(() => console.log("Verificación y ejecución completada"))
+ *   .catch((error) => console.error(error.message));
  */
 const verificarYEjecutarDDJJ = async () => {
     try {

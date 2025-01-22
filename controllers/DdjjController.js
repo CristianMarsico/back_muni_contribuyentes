@@ -157,6 +157,24 @@ exports.updateStateSendRafam = async (req, res, io) => {
     }
 };
 
+/**
+ * Controlador para rectificar una Declaración Jurada Jurada (DDJJ).
+ * 
+ * Este controlador maneja la solicitud para actualizar una DDJJ existente, rectificando su monto, 
+ * tasa calculada y añadiendo una descripción. Si la rectificación es exitosa, se emite un evento 
+ * mediante `io.emit` y se devuelve una respuesta confirmando el éxito.
+ * 
+ * @param {Object} req - Objeto de solicitud que contiene los parámetros `id_taxpayer`, `id_trade` e `id_date`.
+ *                        También incluye los datos del cuerpo de la solicitud como `monto`, `mes` y `fecha`.
+ * @param {Object} res - Objeto de respuesta utilizado para devolver los resultados o un mensaje de error.
+ * @param {Object} io - Objeto `io` utilizado para emitir eventos mediante WebSockets.
+ * 
+ * @returns {Object} - Respuesta JSON con el resultado de la operación o un mensaje de error si la rectificación falla.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * router.put("/rectificar/:id_taxpayer/:id_trade/:id_date", rectificarController);
+ */
 exports.rectificar = async (req, res, io) => {
     const { id_taxpayer, id_trade, id_date } = req.params;
     const { monto, mes, fecha } = req.body;   
@@ -195,6 +213,21 @@ exports.rectificar = async (req, res, io) => {
     }
 };
 
+/**
+ * Función para calcular la cantidad de días entre dos fechas.
+ * 
+ * Esta función toma dos fechas y calcula la diferencia en días entre ellas.
+ * 
+ * @param {string|Date} fechaInicio - Fecha inicial en formato de cadena o como objeto Date.
+ * @param {string|Date} fechaFin - Fecha final en formato de cadena o como objeto Date.
+ * 
+ * @returns {number} - Número de días entre las dos fechas.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * const dias = calcularDiasEntreFechas("2024-01-01", "2024-01-10");
+ * console.log(dias); // 9
+ */
 function calcularDiasEntreFechas(fechaInicio, fechaFin) {
     // Convertir las fechas a milisegundos
     const milisegundosPorDia = 1000 * 60 * 60 * 24; // Un día en milisegundos

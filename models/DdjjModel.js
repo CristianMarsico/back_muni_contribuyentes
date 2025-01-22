@@ -175,6 +175,32 @@ exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
     }
 };
 
+/**
+ * Servicio para rectificar una DDJJ en la base de datos.
+ * 
+ * Esta función realiza una actualización en la base de datos para cambiar el monto, la tasa calculada 
+ * y establecer el estado de la DDJJ como rectificada. También se incluye una descripción detallada con 
+ * el mes y la fecha de rectificación.
+ * 
+ * @param {string} id_taxpayer - El identificador del contribuyente.
+ * @param {string} id_trade - El identificador del comercio.
+ * @param {string} id_date - La fecha original de la DDJJ.
+ * @param {number} monto - El nuevo monto de la DDJJ.
+ * @param {number} tasa - La nueva tasa calculada.
+ * @param {string} mes - El mes correspondiente a la rectificación.
+ * @param {string} fechaRectificacion - Fecha de rectificación en formato `YYYY-MM-DD`.
+ * @param {number} diferenciaDias - Cantidad de días entre la fecha original y la fecha de rectificación.
+ * 
+ * @returns {Object} - Resultado de la consulta de actualización, que contiene el número de filas afectadas.
+ * 
+ * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * rectificar(id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias)
+ *   .then(result => console.log(result))
+ *   .catch(error => console.error(error));
+ */
 exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias) => {
     const query = `
         UPDATE DDJJ

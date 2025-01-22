@@ -1,4 +1,4 @@
-# Despliegue del Backend en Producción
+# Despliegue del Backend
 
 ## Antes de comenzar
 
@@ -37,20 +37,29 @@ El backend utiliza un archivo `.env` para manejar las variables de entorno. Sigu
 
 ---
 
-### 3. Instalar dependencias
+### Instalación de dependencias
 
-Ejecuta el siguiente comando para instalar las dependencias necesarias:
+Sigue estos pasos para instalar las dependencias necesarias para el proyecto:
+
+#### 1. Acceder al proyecto
+
+Asegúrate de haber descargado o clonado el repositorio del proyecto. Una vez hecho esto, abre una terminal y navega hasta la carpeta raíz del proyecto. Por ejemplo:
+
+```bash
+cd ruta/del/proyecto
+```
+
+Con la terminal abierta y ubicada en la carpeta del proyecto, ejecuta el siguiente comando para instalar las dependencias necesarias:
 
 ```bash
 npm install
 ```
+Este comando descargará e instalará automáticamente todas las librerías y paquetes requeridos, que están especificados en el archivo package.json. Estas se guardarán en una carpeta llamada node_modules.
 
 ---
+### 4. Ejecutar el servidor
 
-
-### 4. Ejecutar el servidor en producción
-
-Inicia el servidor en modo producción ejecutando:
+En la raíz del proyecto y con la terminal abierta inicia el servidor en modo producción ejecutando:
 
 ```bash
 npm start
@@ -63,6 +72,7 @@ npm start
 1. Asegúrate de que el servidor esté corriendo correctamente.
 2. Prueba las rutas principales del backend.
 3. Revisa los logs para asegurarte de que no haya errores:
+
    ```bash
    npm run logs
    ```
