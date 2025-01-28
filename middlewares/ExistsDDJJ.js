@@ -1,5 +1,5 @@
 "use strict";
-const conn = require('../dataBase/Connection.js');
+const {conn} = require('../dataBase/Connection.js');
 
 /**
  * Middleware para verificar si ya existe una DDJJ registrada para el contribuyente

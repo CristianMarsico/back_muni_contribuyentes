@@ -1,5 +1,5 @@
 "use strict";
-const conn = require('../dataBase/Connection.js');
+const {conn} = require('../dataBase/Connection.js');
 
 /**
  * Servicio para obtener los datos de configuración de la aplicación.
@@ -21,7 +21,7 @@ const conn = require('../dataBase/Connection.js');
  *     console.error(error); // Maneja el error si ocurre
  *   });
  */
-exports.getAll = () => {
+exports.getAllConfig = () => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM configuracion';
         conn.query(sql, (err, resultados) => {

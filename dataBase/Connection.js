@@ -305,4 +305,4 @@ const initializeValues = async () => {
 };
 
 initializeValues();
-module.exports = conn;
+module.exports = { conn, verificarYEjecutarDDJJ };

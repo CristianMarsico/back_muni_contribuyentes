@@ -3,6 +3,12 @@ const {
     getAll, get, activeState, newTrade, updateTrade
 } = require('../models/TradeModel.js');
 
+const {
+    getAllConfig
+} = require('../models/ConfigurarionModel.js');
+
+const { verificarYEjecutarDDJJ } = require('../dataBase/Connection.js');
+
 /**
  * Controlador para obtener todos los comercios de la base de datos.
  * 
@@ -80,6 +86,17 @@ exports.activeState = async (req, res, io) => {
     try {
         const updatedActive = await activeState(id);
         if (!updatedActive) return res.status(404).json({ error: "El estado no se pudo cambiar" });
+        
+        const configuracion = await getAllConfig();
+        if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
+
+        const diaActual = new Date().getDate();
+        const diaLimite = configuracion[0].fecha_limite_ddjj;
+        
+        if (diaActual >= diaLimite) {           
+            await verificarYEjecutarDDJJ();
+        }
+
         io.emit('comercio-nuevo', { id });
         return res.status(200).json({ message: "El comercio ha sido dado de alta", data: updatedActive });
     } catch (error) {

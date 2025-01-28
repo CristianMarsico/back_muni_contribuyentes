@@ -1,5 +1,5 @@
 "use strict";
-const conn = require('../dataBase/Connection.js');
+const {conn} = require('../dataBase/Connection.js');
 
 /**
  * Servicio para obtener todos los comercios de la base de datos.

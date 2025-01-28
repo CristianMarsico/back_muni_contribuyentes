@@ -1,5 +1,5 @@
 "use strict";
-const conn = require('../dataBase/Connection.js');
+const {conn} = require('../dataBase/Connection.js');
 
 /**
  * Middleware para verificar la validez de la lista de comercios proporcionada.

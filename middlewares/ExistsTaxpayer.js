@@ -1,5 +1,5 @@
 "use strict";
-const conn = require('../dataBase/Connection.js');
+const {conn} = require('../dataBase/Connection.js');
 
 /**
  * Middleware para verificar si el CUIT del contribuyente ya está registrado.

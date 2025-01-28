@@ -1,5 +1,5 @@
 "use strict";
-const conn = require('../dataBase/Connection.js');
+const {conn} = require('../dataBase/Connection.js');
 
 /**
  * Servicio para obtener las DDJJ de un contribuyente y comercio por año y mes.
@@ -204,13 +204,13 @@ exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
 exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias) => {
     const query = `
         UPDATE DDJJ
-        SET monto = $1, rectificada = $2, descripcion = $3, tasa_calculada = $4
-        WHERE id_contribuyente = $5
-            AND id_comercio = $6
-            AND fecha = $7
+        SET monto = $1, rectificada = $2, descripcion = $3, tasa_calculada = $4, cargada_en_tiempo =$5
+        WHERE id_contribuyente = $6
+            AND id_comercio = $7
+            AND fecha = $8
         ;
     `;
-    const values = [monto, true, `Rectificada en ${mes}. Fecha Rectificacion ${fechaRectificacion} (pasaron ${diferenciaDias} días)`, tasa, id_taxpayer, id_trade, id_date];
+    const values = [monto, true, `Rectificada en ${mes}. Fecha Rectificacion ${fechaRectificacion} (pasaron ${diferenciaDias} días)`, tasa, false, id_taxpayer, id_trade, id_date];
 
     try {
         const result = await conn.query(query, values);

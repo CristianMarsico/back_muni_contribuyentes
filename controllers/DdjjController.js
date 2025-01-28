@@ -4,7 +4,7 @@ const {
 } = require('../models/DdjjModel.js');
 
 const {
-    getAll
+    getAllConfig
 } = require('../models/ConfigurarionModel.js');
 
 /**
@@ -58,7 +58,7 @@ exports.addDdjj = async (req, res, io) => {
     try {
         if (!id_contribuyente || !id_comercio || !monto || monto <= 0) return res.status(400).json({ error: 'Datos inválidos o incompletos.' });
 
-        const configuracion = await getAll();
+        const configuracion = await getAllConfig();
         if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
 
         const diaActual = new Date().getDate();
@@ -188,7 +188,7 @@ exports.rectificar = async (req, res, io) => {
     if (!id_taxpayer || !id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
     
     try {
-        const configuracion = await getAll();
+        const configuracion = await getAllConfig();
         if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
         let montoFinal = monto;
         let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
