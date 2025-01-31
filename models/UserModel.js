@@ -48,7 +48,7 @@ exports.register = async (usuario, password, id_rol) => {
  * 
  * @example
  * // Ejemplo de uso:
- * getAllAdmins(1)
+ * getAllUsers(1)
  *   .then(admins => {
  *     console.log(admins); // Muestra la lista de administradores
  *   })
@@ -56,7 +56,7 @@ exports.register = async (usuario, password, id_rol) => {
  *     console.error(error); // Maneja los errores durante la consulta
  *   });
  */
-exports.getAllAdmins = (id_rol) => {
+exports.getAllUsers = (id_rol) => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT * FROM USUARIO WHERE id_rol = $1 ORDER BY usuario DESC`;
         conn.query(sql, [id_rol], (err, resultados) => {
@@ -66,6 +66,29 @@ exports.getAllAdmins = (id_rol) => {
         });
     });
 };
+
+exports.getUser = (id_rol) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT id_usuario, usuario FROM USUARIO WHERE id_rol = $1`;
+        conn.query(sql, [id_rol], (err, resultados) => {
+            if (err) return reject({ status: 500, message: 'Error al obtener al administrar' });
+            if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve las filas si hay resultados
+            resolve([]);  // Devuelve una lista vacía si no hay coincidencias
+        });
+    });
+};
+
+exports.getPass = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT password FROM USUARIO WHERE id_usuario = $1`;
+        conn.query(sql, [id], (err, resultados) => {
+            if (err) return reject({ status: 500, message: 'Error al obtener al administrar' });
+            if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve las filas si hay resultados
+            resolve([]);  // Devuelve una lista vacía si no hay coincidencias
+        });
+    });
+};
+
 
 /**
  * Servicio para eliminar un usuario de la base de datos.
@@ -141,6 +164,21 @@ exports.updatePass = async (id, pass) => {
         WHERE id_usuario = $2;
     `;
     const values = [pass, id];
+    try {
+        const result = await conn.query(query, values);
+        return result;
+    } catch (err) {
+        throw new Error('Error en la base de datos');
+    }
+};
+
+exports.updateUser = async (id, user, pass) => {
+    const query = `
+        UPDATE USUARIO
+        SET usuario =$1, password = $2            
+        WHERE id_usuario = $3;
+    `;
+    const values = [user, pass, id];
     try {
         const result = await conn.query(query, values);
         return result;

@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { register, getAllAdmins, deleteUser, updatePass } = require("../controllers/UserController.js");
+const { register, getAllUsers, deleteUser, updatePass, getUser, updateUser } = require("../controllers/UserController.js");
 const { ExistsUser } = require('../middlewares/ExistsUser.js');
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 
@@ -69,7 +69,9 @@ module.exports = (io) => {
      * }).then(response => response.json())
      *   .then(data => console.log(data));
      */
-    router.get("/user", AuthMiddleware, getAllAdmins);
+    router.get("/user", AuthMiddleware, getAllUsers);
+    
+    router.get("/user/:rol", AuthMiddleware, getUser);
 
     /**
      * Elimina un usuario específico de la base de datos.
@@ -108,6 +110,8 @@ module.exports = (io) => {
     * app.put('/user/:id/:pass', updatePassController);
     */
     router.put("/user/:id/:pass", AuthMiddleware, updatePass);
+
+    router.put("/user/:id", AuthMiddleware, ExistsUser, updateUser);
 
     return router;
 };
