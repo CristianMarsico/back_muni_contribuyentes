@@ -42,7 +42,7 @@ const inizializeRolesDefault = async () => {
 
 /**
  * Función para inicializar un usuario por defecto en la base de datos.
- * Si el usuario ya existe, no realiza ninguna acción.
+ * Si el usuario con rol supér admin ya existe, no realiza ninguna acción.
  * 
  * @function initializeUserDefault
  * 
@@ -53,21 +53,26 @@ const initializeUserDefault = async () => {
     const defaultPassword = "admin";
 
     try {
-        // Verificar si el usuario ya existe
-        const userResult = await conn.query("SELECT * FROM usuario WHERE usuario = $1", [defaultUsername]);
+        // Obtener el id del rol 'super_admin' (asumiendo que ya existe)
+        const roleResult = await conn.query("SELECT id_rol FROM rol WHERE rol = 'super_admin'");
+        const roleId = roleResult.rows[0]?.id_rol;
+
+        if (!roleId) {
+            console.error("Error: No se encontró el rol 'super_admin'. Verifica que se haya creado correctamente.");
+            return;
+        }
+
+        // Verificar si ya existe un usuario con el rol 'super_admin'
+        const userResult = await conn.query("SELECT * FROM usuario WHERE id_rol = $1", [roleId]);
 
         if (userResult.rows.length > 0) {
-            console.log(`Usuario por defecto ya existe: ${defaultUsername}`);
+            console.log("Ya existe un usuario con el rol 'super_admin', no se creará uno nuevo.");
             return;
         }
 
         // Encriptar la contraseña
         const saltRounds = 8;
         const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
-
-        // Asignar el rol de admin
-        const roleResult = await conn.query("SELECT id_rol FROM rol WHERE rol = 'super_admin'");
-        const roleId = roleResult.rows[0].id_rol;
 
         // Crear el usuario por defecto
         await conn.query(
