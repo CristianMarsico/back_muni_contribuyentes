@@ -210,7 +210,7 @@ exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa, mes, fe
             AND fecha = $8
         ;
     `;
-    const values = [monto, true, `Rectificada en ${mes}. Fecha Rectificacion ${fechaRectificacion} (pasaron ${diferenciaDias} días)`, tasa, false, id_taxpayer, id_trade, id_date];
+    const values = [monto, true, `Rectificación de ${mes}. Realizada el ${fechaRectificacion} (pasaron ${diferenciaDias} días)`, tasa, false, id_taxpayer, id_trade, id_date];
 
     try {
         const result = await conn.query(query, values);

@@ -180,7 +180,7 @@ const insertarDDJJFaltantes = async () => {
                 ON com.id_comercio = d.id_comercio 
                 AND c.id_contribuyente = d.id_contribuyente
             WHERE d.id_comercio IS NULL
-                AND com.estado = true
+                AND com.estado = true              
             LIMIT 100;
         `);
 
@@ -195,7 +195,7 @@ const insertarDDJJFaltantes = async () => {
         ];
 
         const today = new Date();
-        const nombreMes = meses[today.getMonth()];
+        const nombreMes = meses[(1 - 1 + 12) % 12];
 
         for (const { id_contribuyente, id_comercio } of rows) {
             await conn.query(`

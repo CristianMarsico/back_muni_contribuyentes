@@ -4,6 +4,7 @@ const router = express.Router();
 
 const { register, getAllUsers, deleteUser, updatePass, getUser, updateUser } = require("../controllers/UserController.js");
 const { ExistsUser } = require('../middlewares/ExistsUser.js');
+const { CheckAvailableUser } = require('../middlewares/CheckAvailableUser.js');
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 
 /**
@@ -111,7 +112,7 @@ module.exports = (io) => {
     */
     router.put("/user/:id/:pass", AuthMiddleware, updatePass);
 
-    router.put("/user/:id", AuthMiddleware, ExistsUser, updateUser);
+    router.put("/user/:id", AuthMiddleware, CheckAvailableUser, updateUser);
 
     return router;
 };
