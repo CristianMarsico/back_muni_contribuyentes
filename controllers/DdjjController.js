@@ -69,7 +69,14 @@ exports.addDdjj = async (req, res, io) => {
         let montoFinal = monto;
         let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
 
+        const montoMinimo = configuracion[0].monto_defecto || 0;
+        
 
+        // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
+        if (tasa_calculada < montoMinimo) {
+            montoFinal = montoMinimo;
+            tasa_calculada = montoMinimo
+        }
         //EN CASO DE QUE SUPERE LA FECHA
         if (diaActual >= diaLimite) {
             return res.status(404).json({ error: 'Su DDJJ ha sido cargada por el sistema. Debe RECTIFICAR' });
@@ -193,7 +200,15 @@ exports.rectificar = async (req, res, io) => {
         let montoFinal = monto;
         let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
 
-        let rectificada = await rectificar(id_taxpayer, id_trade, id_date, monto, tasa_calculada, mes, fechaFormateada, diferenciaDias);
+        const montoMinimo = configuracion[0].monto_defecto || 0;
+
+        // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
+        if (tasa_calculada < montoMinimo) {
+            montoFinal = montoMinimo;
+            tasa_calculada = montoMinimo
+        }
+
+        let rectificada = await rectificar(id_taxpayer, id_trade, id_date, montoFinal, tasa_calculada, mes, fechaFormateada, diferenciaDias);
 
         if (rectificada.rowCount > 0) {
             io.emit('rectificada', {
