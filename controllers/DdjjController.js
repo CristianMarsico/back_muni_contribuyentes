@@ -25,8 +25,10 @@ const {
  */
 exports.getByYearTradeMonth = async (req, res) => {
     const { id_taxpayer, id_trade, year, month } = req.params;
+    
+    const nextMonth = (month % 12) + 1;  
     try {
-        let response = await getByYearTradeMonth(id_taxpayer, id_trade, year, month);
+        let response = await getByYearTradeMonth(id_taxpayer, id_trade, year, nextMonth);
         if (response && response.length > 0) return res.status(200).json({ response });
         if (!month) return res.status(404).json({ error: "Ud. aún no ha cargado ninguna ddjj" });
         else return res.status(404).json({ error: "No hay DDJJ correspondientes al mes " + month });
@@ -73,8 +75,7 @@ exports.addDdjj = async (req, res, io) => {
         
 
         // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
-        if (tasa_calculada < montoMinimo) {
-            montoFinal = montoMinimo;
+        if (tasa_calculada < montoMinimo) {            
             tasa_calculada = montoMinimo
         }
         //EN CASO DE QUE SUPERE LA FECHA
@@ -203,8 +204,7 @@ exports.rectificar = async (req, res, io) => {
         const montoMinimo = configuracion[0].monto_defecto || 0;
 
         // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
-        if (tasa_calculada < montoMinimo) {
-            montoFinal = montoMinimo;
+        if (tasa_calculada < montoMinimo) {            
             tasa_calculada = montoMinimo
         }
 
