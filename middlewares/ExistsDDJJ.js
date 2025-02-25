@@ -1,5 +1,5 @@
 "use strict";
-const {conn} = require('../dataBase/Connection.js');
+const { conn } = require('../dataBase/Connection.js');
 
 /**
  * Middleware para verificar si ya existe una DDJJ registrada para el contribuyente
@@ -16,11 +16,24 @@ const {conn} = require('../dataBase/Connection.js');
  *
  * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
-exports.ExistsDDJJ = (req, res, next) => {   
+exports.ExistsDDJJ = (req, res, next) => {
     const { id_contribuyente, id_comercio } = req.body;
     const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
+    let anio = currentDate.getFullYear();
+    let mes = currentDate.getMonth();    
+
+    let year = parseInt(anio);  // Convertir a número    
+    let month = parseInt(mes);// Convertimos también month a número
+    const nextMonth = (month % 12) + 1;
+    const nextYear = year;
+
+    const months = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    
+    const today = new Date();
+    const nombreMes = months[(today.getMonth() - 1 + 12) % 12];
    
     try {
         const query = `
@@ -32,10 +45,10 @@ exports.ExistsDDJJ = (req, res, next) => {
             AND EXTRACT(MONTH FROM fecha) = $4
             LIMIT 1
         `;
-        conn.query(query, [id_contribuyente, id_comercio, year, month], (err, results) => {
+        conn.query(query, [id_contribuyente, id_comercio, nextYear, nextMonth], (err, results) => {
             if (err) return res.status(500).json({ error: 'Error de servidor' });
             if (results.rows.length > 0) {
-                return res.status(404).json({ error: `Ud. ya registró la DDJJ de dicho comercio correspondiente al mes ${month} del ${year}`});
+                return res.status(404).json({ error: `Ud. ya registró la DDJJ de dicho comercio correspondiente al mes de ${nombreMes}` });
             }
             return next();
         });

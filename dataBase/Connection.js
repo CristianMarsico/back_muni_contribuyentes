@@ -195,7 +195,7 @@ const insertarDDJJFaltantes = async () => {
         ];
 
         const today = new Date();
-        const nombreMes = meses[(1 - 1 + 12) % 12];
+        const nombreMes = meses[(today.getMonth() - 1 + 12) % 12];
 
         for (const { id_contribuyente, id_comercio } of rows) {
             await conn.query(`

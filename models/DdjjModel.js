@@ -27,7 +27,7 @@ const { conn } = require('../dataBase/Connection.js');
  *     console.error(error); // Maneja el error si ocurre
  *   });
  */
-exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
+exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {   
     return new Promise((resolve, reject) => {
         let query = `
             SELECT c.cuit, com.cod_comercio, d.* 
@@ -35,19 +35,24 @@ exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {
             JOIN contribuyente c ON c.id_contribuyente = d.id_contribuyente
             JOIN comercio com ON d.id_comercio = com.id_comercio
             WHERE c.id_contribuyente = $1 
-            AND d.id_comercio = $2 
-            AND (
+            AND d.id_comercio = $2`;
+
+        const values = [id_taxpayer, id_trade];
+
+        if (month) {
+            // Si se especifica un mes exacto, ajustar la búsqueda a ese mes y año
+           
+            query += ` AND EXTRACT(YEAR FROM fecha) = $3 AND EXTRACT(MONTH FROM fecha) = $4`;
+            values.push(year, month);
+        } else {
+            // Si no hay mes, usar el rango de búsqueda por defecto
+           
+            query += ` AND (
                 (EXTRACT(YEAR FROM fecha) = $3 AND EXTRACT(MONTH FROM fecha) >= 2) 
                 OR 
                 (EXTRACT(YEAR FROM fecha) = $3 + 1 AND EXTRACT(MONTH FROM fecha) = 1)
             )`;
-
-        const values = [id_taxpayer, id_trade, year];
-
-        // Si se especifica un mes exacto, ajustar la búsqueda
-        if (month) {
-            query += ' AND EXTRACT(MONTH FROM fecha) = $4';
-            values.push(month);
+            values.push(year);
         }
         query += ' ORDER BY fecha';
 
