@@ -26,9 +26,14 @@ const {
 exports.getByYearTradeMonth = async (req, res) => {
     const { id_taxpayer, id_trade, year, month } = req.params;
     
-    const nextMonth = (month % 12) + 1;  
+    let anio = parseInt(year);  // Convertir a número
+    // Convertimos también month a número
+    let mes = parseInt(month);    
+    const nextMonth = (mes % 12) + 1;
+    const nextYear = mes === 12 ? anio + 1 : anio;    
+    
     try {
-        let response = await getByYearTradeMonth(id_taxpayer, id_trade, year, nextMonth);
+        let response = await getByYearTradeMonth(id_taxpayer, id_trade, nextYear, nextMonth);
         if (response && response.length > 0) return res.status(200).json({ response });
         if (!month) return res.status(404).json({ error: "Ud. aún no ha cargado ninguna ddjj" });
         else return res.status(404).json({ error: "No hay DDJJ correspondientes al mes " + month });
