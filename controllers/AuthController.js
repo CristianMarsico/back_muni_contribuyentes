@@ -54,8 +54,6 @@ const nodemailer = require("nodemailer");
 exports.register = async (req, res, io) => {
     const { nombre, apellido, cuit, email, direccion, telefono, password, rePassword, razon_social, misComercios } = req.body;
 
-    const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
-
     try {
         if (password !== rePassword) return res.status(404).json({ error: 'Las contraseñas no coinciden.' });
 
@@ -68,7 +66,7 @@ exports.register = async (req, res, io) => {
         const nuevoContribuyente = await register(
             nombre,
             apellido,
-            cuitConvert,
+            cuit,
             email,
             direccion,
             telefono,
@@ -202,10 +200,8 @@ exports.loginAdmin = async (req, res) => {
 exports.loginTaxpayer = async (req, res) => {
 
     const { cuit, password } = req.body;
-    const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
-
     try {
-        const resp = await getTaxpayerWithRole(cuitConvert);
+        const resp = await getTaxpayerWithRole(cuit);
 
         // Verificar si se encontró el usuario
         if (resp.length === 0) return res.status(404).json({ error: "CUIT o contraseña incorrectos" });
@@ -399,18 +395,3 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({ error: "Error al actualizar la contraseña." });
     }
 };
-
-/**
- * Convierte una cadena de texto a un número tipo BigInt.
- * Esto es útil para manejar números grandes que superan el límite de los números enteros regulares.
- * @function
- * @param {string} text - La cadena de texto que representa un número grande.
- * @returns {BigInt} - El número convertido a tipo BigInt.
- * @example
- * // Entrada: "20123456785"
- * // Salida: 20123456785n
- */
-function convertStrigToNumber(text) {
-    const number = BigInt(text); // Usamos BigInt
-    return number; // Salida: 20123456785n
-}

@@ -17,11 +17,10 @@ const {conn} = require('../dataBase/Connection.js');
  * @returns {Object} Respuesta con el estado de la verificación o un error.
  */
 exports.ExistsTaxpayer = (req, res, next) => {
-    const { cuit } = req.body; 
-    const cuitConvert = convertStrigToNumber(`${cuit.prefijoCuit}${cuit.numeroCuit}${cuit.verificadorCuit}`)
-    
+   
+    const { cuit } = req.body;    
     const sql = `SELECT 1 FROM CONTRIBUYENTE WHERE cuit = $1`;
-    conn.query(sql, [cuitConvert], (err, results) => {       
+    conn.query(sql, [cuit], (err, results) => {       
         if (err) return res.status(500).json({ error: 'Error de servidor' });
         if (results.rows.length > 0){           
             return res.status(404).json({ error: 'Ese CUIT ya figura registrado' });
@@ -29,8 +28,3 @@ exports.ExistsTaxpayer = (req, res, next) => {
         return next();
     });
 };
-
-function convertStrigToNumber(text) {
-    const number = BigInt(text); // Usamos BigInt
-    return number; // Salida: 20123456785n
-}
