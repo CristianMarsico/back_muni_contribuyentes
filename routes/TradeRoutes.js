@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
-const { getAll, get, activeState, newTrade, updateTrade } = require("../controllers/TradeController.js");
+const { getAll, get, activeState, newTrade, updateTrade, disabledState } = require("../controllers/TradeController.js");
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 const { ExistsNewTrade } = require("../middlewares/ExistsNewTrade.js");
 
@@ -47,6 +47,19 @@ module.exports = (io) => {
    * @returns {JSON} Mensaje de éxito o error en caso de fallo.
    */
     router.put("/trade/:id", AuthMiddleware, (req, res) => activeState(req, res, io));
+
+    /**
+    * Actualiza el estado de un comercio y emite un evento.
+    * @name PUT /trade/:id
+    * @function
+    * @memberof module:routes/trade
+    * @param {string} id - ID del comercio.
+    * @param {Object} req - Objeto de solicitud HTTP.
+    * @param {Object} res - Objeto de respuesta HTTP.
+    * @param {Object} io - Objeto de Socket.io para emitir eventos en tiempo real.
+    * @returns {JSON} Mensaje de éxito o error en caso de fallo.
+    */
+    router.put("/trades/:id", AuthMiddleware, (req, res) => disabledState(req, res, io));
 
     /**
    * Actualiza los datos de un comercio y emite un evento.

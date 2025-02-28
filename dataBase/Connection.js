@@ -201,7 +201,7 @@ const insertarDDJJFaltantes = async () => {
             await conn.query(`
                 INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam, rectificada)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            `, [id_contribuyente, id_comercio, today, config[0].monto_defecto, `Necesita Rectificar el mes de ${nombreMes}`, false, config[0].monto_defecto, false, false]);
+            `, [id_contribuyente, id_comercio, today, 0, `Necesita Rectificar el mes de ${nombreMes}`, false, config[0].monto_defecto, false, false]);
         }
 
         return false;

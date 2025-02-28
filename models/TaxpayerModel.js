@@ -23,7 +23,7 @@ const {conn} = require('../dataBase/Connection.js');
  */
 exports.getAll = () => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM contribuyente';
+        const sql = 'SELECT * FROM contribuyente ORDER BY estado, cuit';
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener los contribuyentes' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas
@@ -92,7 +92,7 @@ exports.editActive = async (id) => {
  */
 exports.getWithTrade = (id) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT c.nombre, c.apellido, c.email, c.estado as estado_contri,  c.direccion, c.telefono, c.cuit, c.razon_social, com.id_comercio, com.cod_comercio, com.nombre_comercio, com.direccion_comercio, com.estado FROM contribuyente c JOIN comercio com USING (id_contribuyente) WHERE com.id_contribuyente = $1';
+        const sql = 'SELECT c.nombre, c.apellido, c.email, c.estado as estado_contri,  c.direccion, c.telefono, c.cuit, c.razon_social, com.id_comercio, com.cod_comercio, com.nombre_comercio, com.direccion_comercio, com.estado FROM contribuyente c JOIN comercio com USING (id_contribuyente) WHERE com.id_contribuyente = $1 ORDER BY com.cod_comercio';
         conn.query(sql, [id], (err, resultados) => {           
             if (err) return reject({ status: 500, message: 'Error al obtener los contribuyentes y sus comercios' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas

@@ -1,6 +1,6 @@
 "use strict";
 const {
-    getAll, get, activeState, newTrade, updateTrade
+    getAll, get, activeState, newTrade, updateTrade, disabledState
 } = require('../models/TradeModel.js');
 
 const {
@@ -166,5 +166,37 @@ exports.newTrade = async (req, res, io) => {
         return res.status(200).json({ message: 'Comercio registrado exitosamente.', data: comerciosAgregado });
     } catch (error) {
         return res.status(500).json({ error: 'Error en el servidor' });
+    }
+};
+
+
+/**
+ * Controlador para cambiar el estado de un comercio a "inactivo".
+ * 
+ * Este controlador maneja la solicitud para cambiar el estado de un comercio a "inactivo" utilizando su ID. 
+ * Si el ID no se proporciona o si no se encuentra el comercio, se devolverá un error. 
+ * Si el cambio de estado es exitoso, se devuelve un mensaje de éxito y se emite un evento.
+ * 
+ * @param {Object} req - El objeto de la solicitud, que contiene el parámetro `id` en los parámetros de la URL.
+ * @param {Object} res - El objeto de la respuesta utilizado para devolver el estado del cambio o un error.
+ * @param {Object} io - El objeto de Socket.IO utilizado para emitir el evento `estado-inactivo` en caso de éxito.
+ * 
+ * @returns {Object} - Respuesta con el mensaje de éxito o error, según el resultado del cambio de estado.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.put('/comercio/activar/:id', activeStateController);
+ */
+exports.disabledState = async (req, res, io) => {
+    const { id } = req.params;
+    if (!id) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
+    try {
+        const updatedActive = await disabledState(id);
+        if (!updatedActive) return res.status(404).json({ error: "El estado no se pudo cambiar" });
+
+        io.emit('estado-inactivo', { id });
+        return res.status(200).json({ message: "El comercio ha quedado inactivo", data: updatedActive });
+    } catch (error) {
+        res.status(500).json({ error: "Error de servidor" });
     }
 };

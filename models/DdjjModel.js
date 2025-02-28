@@ -135,7 +135,7 @@ exports.getAllDDJJ = async () => {
                         USING(id_contribuyente)
                      JOIN COMERCIO com 
                         USING(id_comercio)                     
-                     ORDER BY c.cuit, com.cod_comercio`;
+                     ORDER BY EXTRACT(YEAR FROM dj.fecha), EXTRACT(MONTH FROM dj.fecha), EXTRACT(DAY FROM dj.fecha), c.cuit, com.cod_comercio`;
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener las ddjj' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas

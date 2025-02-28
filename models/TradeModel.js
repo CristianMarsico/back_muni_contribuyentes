@@ -204,3 +204,39 @@ exports.newTrade = async (id_contribuyente, cod_comercio, nombre_comercio, direc
         return false;
     }
 };
+
+/**
+ * Servicio para cambiar el estado de un comercio a "inactivo".
+ * 
+ * Esta función realiza una actualización en la base de datos para cambiar el estado de un comercio
+ * a `false` usando su `id_comercio`. Si el comercio se actualiza correctamente, devuelve el ID del comercio actualizado.
+ * Si no se encuentra el comercio o no se realiza el cambio, devuelve `null`.
+ * 
+ * @param {number} id - El ID del comercio cuyo estado debe cambiar a activo.
+ * 
+ * @returns {Object|null} - El objeto con el ID del comercio actualizado o `null` si no se encuentra el comercio.
+ * 
+ * @throws {Error} - Si ocurre un error durante la consulta SQL, se lanzará un error con el mensaje "Error al cambiar el estado".
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * activeState(1)
+ *   .then(result => {
+ *     console.log(result); // Muestra el comercio actualizado o `null`
+ *   })
+ *   .catch(error => {
+ *     console.error(error); // Maneja los errores durante la actualización
+ *   });
+ */
+exports.disabledState = async (id) => {
+    const query = `
+        UPDATE comercio
+        SET estado = false
+        WHERE id_comercio = $1
+        RETURNING id_comercio;
+    `;
+    const values = [id];
+
+    const result = await conn.query(query, values);
+    return result.rows[0];
+};
