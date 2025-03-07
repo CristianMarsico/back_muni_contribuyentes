@@ -96,7 +96,7 @@ exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, carg
     try {
         const query = `
       INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam, rectificada)
-      VALUES ($1, $2, CURRENT_DATE, $3, $4, $5, $6, false, false)
+      VALUES ($1, $2, DATE(NOW()), $3, $4, $5, $6, false, false)
       RETURNING id_contribuyente, id_comercio, fecha, monto, descripcion
     `;
         const result = await conn.query(query, [id_contribuyente, id_comercio, monto, descripcion, cargada, tasa_calculada]);

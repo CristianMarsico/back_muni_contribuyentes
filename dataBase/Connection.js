@@ -172,15 +172,17 @@ const insertarDDJJFaltantes = async () => {
         if (!config.length) throw new Error("No se encontró el monto_defecto en la configuración.");
 
         const { rows } = await conn.query(`
-            SELECT c.id_contribuyente, com.id_comercio
+           SELECT c.id_contribuyente, com.id_comercio
             FROM contribuyente c
-            JOIN comercio com 
+            JOIN comercio com
                 ON c.id_contribuyente = com.id_contribuyente
-            LEFT JOIN ddjj d 
-                ON com.id_comercio = d.id_comercio 
+            LEFT JOIN ddjj d
+                ON com.id_comercio = d.id_comercio
                 AND c.id_contribuyente = d.id_contribuyente
+                AND EXTRACT(MONTH FROM d.fecha) = EXTRACT(MONTH FROM CURRENT_DATE)
+                AND EXTRACT(YEAR FROM d.fecha) = EXTRACT(YEAR FROM CURRENT_DATE)
             WHERE d.id_comercio IS NULL
-                AND com.estado = true              
+            AND com.estado = true
             LIMIT 100;
         `);
 
