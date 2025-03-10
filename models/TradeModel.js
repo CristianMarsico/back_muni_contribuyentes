@@ -26,7 +26,7 @@ exports.getAll = () => {
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener los comercios' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas
-            resolve([]);  // Devuelve una lista vacía si no hay tareas
+            resolve([]);  // Devuelve una lista vacía
         });
     });
 };
@@ -59,7 +59,7 @@ exports.get = (id) => {
         conn.query(sql, [id], (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener los comercios del contribuyente' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas
-            resolve([]);  // Devuelve una lista vacía si no hay tareas
+            resolve([]);  // Devuelve una lista vacía
         });
     });
 };
@@ -239,4 +239,61 @@ exports.disabledState = async (id) => {
 
     const result = await conn.query(query, values);
     return result.rows[0];
+};
+
+
+exports.deleteTradesWithoutDDJJ = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = `DELETE FROM comercio 
+                     WHERE id_comercio IN 
+                        (SELECT id_comercio 
+                         FROM comercio 
+                         WHERE id_contribuyente = $1 
+                         AND id_comercio NOT IN (SELECT id_comercio FROM ddjj));`;
+        conn.query(sql, [id], (err, resultados) => {
+            if (err) return reject(err);
+            resolve(resultados); // Retornamos `resultados` para depurar si es necesario
+        });
+    });
+};
+
+
+
+// Función para respaldar los comercios antes de la eliminación
+exports.backupComercios = (id) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT jsonb_agg(
+                        jsonb_build_object(
+                            'id_comercio', c.id_comercio,
+                            'codigo_comercio', c.cod_comercio,
+                            'nombre_comercio', c.nombre_comercio,
+                            'direccion_comercio', c.direccion_comercio
+                        )
+                    ) AS comercios
+                    FROM comercio c
+                    WHERE c.id_contribuyente = $1;`;
+
+        conn.query(sql, [id], (err, resultados) => {
+            if (err) return reject(err);
+
+            if (resultados.rowCount > 0) {
+                let comercios = resultados.rows[0].comercios;
+                // Escapar las comillas dobles y otros caracteres especiales en el JSON
+                const comerciosString = JSON.stringify(comercios);
+
+                // Insertar los comercios en la tabla de respaldo
+                const insertSql = `INSERT INTO respaldo_comercios (id_contribuyente, comercios, fecha_respaldo)
+                                   VALUES ($1, $2, NOW())`;
+
+                // Ahora el campo comercios es un string con los caracteres escapados correctamente
+                conn.query(insertSql, [id, comerciosString], (insertErr) => {
+                    if (insertErr) return reject(insertErr);                    
+                  
+                    resolve(true); // Respaldo exitoso
+                });
+            } else {
+                resolve(false); // No hay comercios para respaldar
+            }
+        });
+    });
 };

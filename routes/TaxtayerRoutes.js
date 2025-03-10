@@ -3,8 +3,9 @@ const express = require('express');
 const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
-const { getAll, editActive, getWithTrade } = require("../controllers/TaxpayerController.js");
+const { getAll, editActive, getWithTrade, deleteTaxpayer } = require("../controllers/TaxpayerController.js");
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
+const { UploadedDDJJ } = require('../middlewares/UploadedDDJJ.js');
 
 /**
  * Define las rutas para gestionar los contribuyentes.
@@ -47,6 +48,8 @@ module.exports = (io) => {
   * @returns {JSON} Respuesta con los datos del contribuyente y sus comercios o un mensaje de error.
   */
   router.get("/taxpayer/:id", AuthMiddleware, getWithTrade);
+
+  router.delete("/taxpayer/:id", AuthMiddleware, UploadedDDJJ, deleteTaxpayer);
 
   return router;
 };

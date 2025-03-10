@@ -100,3 +100,13 @@ exports.getWithTrade = (id) => {
         });
     });
 };
+
+exports.deleteTaxpayer = (id) => {    
+    return new Promise((resolve, reject) => {
+        const sql = `DELETE FROM contribuyente WHERE id_contribuyente = $1;`;
+        conn.query(sql, [id], (err, resultados) => {
+            if (err) return reject(err);
+            resolve(resultados); // Retornamos el objeto `resultados` para validar `rowCount`
+        });
+    });
+};

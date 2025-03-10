@@ -1,8 +1,13 @@
 "use strict";
+const { conn } = require('../dataBase/Connection.js');
+
 const {
-    getAll, editActive, getWithTrade
+    getAll, editActive, getWithTrade, deleteTaxpayer
 } = require('../models/TaxpayerModel.js');
 
+const {
+    deleteTradesWithoutDDJJ, backupComercios
+} = require('../models/TradeModel.js');
 /**
  * Controlador para obtener todos los contribuyentes de la base de datos.
  * 
@@ -22,7 +27,7 @@ exports.getAll = async (req, res) => {
     try {
         let response = await getAll();
         if (response && response.length > 0)
-            return res.status(200).json({ response });    
+            return res.status(200).json({ response });
         return res.status(404).json({ error: "No hay contribuyetes en la base de datos" });
     } catch (error) {
         return res.status(500).json({ error: "Error de servidor" });
@@ -73,12 +78,12 @@ exports.getWithTrade = async (req, res) => {
  * app.put('/contribuyentes/:id/activar', editActiveController);
  */
 exports.editActive = async (req, res, io) => {
-    const { id } = req.params;   
+    const { id } = req.params;
     if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });
     try {
         const updatedActive = await editActive(id);
         if (!updatedActive) return res.status(404).json({ error: "No fue posible darlo de alta" });
-       
+
         // Emitir el estado actualizado con los datos necesarios
         io.emit("estado-actualizado", {
             id_contribuyente: updatedActive.id_contribuyente,
@@ -91,5 +96,40 @@ exports.editActive = async (req, res, io) => {
         });
     } catch (error) {
         res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+exports.deleteTaxpayer = async (req, res) => {
+     const { id } = req.params;
+
+    const client = await conn.connect(); // Obtener conexión
+
+    try {
+        await client.query('BEGIN'); // Iniciar transacción
+
+        const resultComercios = await backupComercios(id);       
+        if (!resultComercios) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: "No se encontraron comercios para respaldar." });
+        }
+        // Eliminar los comercios sin DDJJ
+        await deleteTradesWithoutDDJJ(id);
+        
+        // Eliminar el contribuyente
+        const resultTaxpayer = await deleteTaxpayer(id);
+
+        if (resultTaxpayer.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: "No se encontró el contribuyente para eliminar." });
+        }
+
+        await client.query('COMMIT'); // Confirmar los cambios
+        return res.status(200).json({ message: "El contribuyente ha sido dado de baja" });
+
+    } catch (error) {
+        await client.query('ROLLBACK'); // Revertir la transacción en caso de error
+        res.status(500).json({ error: `Error de servidor: ${error.message}` });
+    } finally {
+        client.release(); // Liberar la conexión
     }
 };
