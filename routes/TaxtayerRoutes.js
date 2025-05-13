@@ -49,7 +49,7 @@ module.exports = (io) => {
   */
   router.get("/taxpayer/:id", AuthMiddleware, getWithTrade);
 
-  router.delete("/taxpayer/:id", AuthMiddleware, UploadedDDJJ, deleteTaxpayer);
+  router.delete("/taxpayer/:id", AuthMiddleware, UploadedDDJJ, (req, res) => deleteTaxpayer(req, res, io));
 
   return router;
 };

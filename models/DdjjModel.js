@@ -130,12 +130,34 @@ exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, carg
  */
 exports.getAllDDJJ = async () => {
     return new Promise((resolve, reject) => {
-        const sql = `SELECT c.cuit, dj.*, com.cod_comercio, com.nombre_comercio 
-                    FROM CONTRIBUYENTE c JOIN DDJJ dj
-                        USING(id_contribuyente)
-                     JOIN COMERCIO com 
-                        USING(id_comercio)                     
-                     ORDER BY EXTRACT(YEAR FROM dj.fecha), EXTRACT(MONTH FROM dj.fecha), EXTRACT(DAY FROM dj.fecha), c.cuit, com.cod_comercio`;
+        const sql = `SELECT
+                        d.*,
+                        c.cuit,
+                        co.cod_comercio,
+                        co.nombre_comercio,
+                        r.id_rectificacion,                        
+                        r.cantidad_rectificaciones,
+                        r.enviada
+                    FROM ddjj d
+                    JOIN contribuyente c ON d.id_contribuyente = c.id_contribuyente
+                    JOIN comercio co ON d.id_comercio = co.id_comercio
+                    LEFT JOIN (
+                        SELECT DISTINCT ON (id_contribuyente, id_comercio, fecha)
+                            id_rectificacion,
+                            id_contribuyente,
+                            id_comercio,
+                            fecha,
+                            descripcion,
+                            monto,
+                            tasa,
+                            cantidad_rectificaciones,
+                            enviada
+                        FROM rectificacion
+                        ORDER BY id_contribuyente, id_comercio, fecha, id_rectificacion DESC
+                    ) r ON d.id_contribuyente = r.id_contribuyente
+                        AND d.id_comercio = r.id_comercio
+                        AND d.fecha = r.fecha
+                    ORDER BY d.id_contribuyente, d.id_comercio, d.fecha;`;
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener las ddjj' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas
@@ -188,47 +210,3 @@ exports.updateStateSendRafam = async (id_taxpayer, id_trade, id_date) => {
     }
 };
 
-/**
- * Servicio para rectificar una DDJJ en la base de datos.
- * 
- * Esta función realiza una actualización en la base de datos para cambiar el monto, la tasa calculada 
- * y establecer el estado de la DDJJ como rectificada. También se incluye una descripción detallada con 
- * el mes y la fecha de rectificación.
- * 
- * @param {string} id_taxpayer - El identificador del contribuyente.
- * @param {string} id_trade - El identificador del comercio.
- * @param {string} id_date - La fecha original de la DDJJ.
- * @param {number} monto - El nuevo monto de la DDJJ.
- * @param {number} tasa - La nueva tasa calculada.
- * @param {string} mes - El mes correspondiente a la rectificación.
- * @param {string} fechaRectificacion - Fecha de rectificación en formato `YYYY-MM-DD`.
- * @param {number} diferenciaDias - Cantidad de días entre la fecha original y la fecha de rectificación.
- * 
- * @returns {Object} - Resultado de la consulta de actualización, que contiene el número de filas afectadas.
- * 
- * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
- * 
- * @example
- * // Ejemplo de uso:
- * rectificar(id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias)
- *   .then(result => console.log(result))
- *   .catch(error => console.error(error));
- */
-exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias) => {
-    const query = `
-        UPDATE DDJJ
-        SET monto = $1, rectificada = $2, descripcion = $3, tasa_calculada = $4, cargada_en_tiempo =$5
-        WHERE id_contribuyente = $6
-            AND id_comercio = $7
-            AND fecha = $8
-        ;
-    `;
-    const values = [monto, true, `Rectificación de ${mes}. Realizada el ${fechaRectificacion} (pasaron ${diferenciaDias} días)`, tasa, false, id_taxpayer, id_trade, id_date];
-
-    try {
-        const result = await conn.query(query, values);
-        return result;
-    } catch (err) {
-        throw new Error('Error en la base de datos');
-    }
-};

@@ -99,7 +99,7 @@ exports.editActive = async (req, res, io) => {
     }
 };
 
-exports.deleteTaxpayer = async (req, res) => {
+exports.deleteTaxpayer = async (req, res, io) => {
      const { id } = req.params;
 
     const client = await conn.connect(); // Obtener conexión
@@ -116,7 +116,7 @@ exports.deleteTaxpayer = async (req, res) => {
         await deleteTradesWithoutDDJJ(id);
         
         // Eliminar el contribuyente
-        const resultTaxpayer = await deleteTaxpayer(id);
+        const resultTaxpayer = await deleteTaxpayer(id);       
 
         if (resultTaxpayer.rowCount === 0) {
             await client.query('ROLLBACK');
@@ -124,6 +124,10 @@ exports.deleteTaxpayer = async (req, res) => {
         }
 
         await client.query('COMMIT'); // Confirmar los cambios
+        io.emit("borrado", {
+            id_contribuyente: id,
+            estado: "eliminado"
+        });
         return res.status(200).json({ message: "El contribuyente ha sido dado de baja" });
 
     } catch (error) {

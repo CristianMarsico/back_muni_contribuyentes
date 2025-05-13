@@ -61,6 +61,7 @@ app.use('/api', require('./routes/TaxtayerRoutes.js')(io));
 app.use('/api', require('./routes/TradeRoutes.js')(io));
 app.use('/api', require('./routes/DdjjRoutes.js')(io));
 app.use('/api', require('./routes/UserRoutes.js')(io));
+app.use('/api', require('./routes/RectificacionRoutes.js')(io));
 //para las fechas de vencimientos
 app.use('/api', require('./routes/ExpirationDateRoutes.js')(io));
 //para las configuraciones generales

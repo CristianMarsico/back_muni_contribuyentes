@@ -259,12 +259,16 @@ const programarTareaDDJJ = async () => {
         if (!rows.length) throw new Error("No se encontró la fecha límite.");
 
         const fechaLimite = rows[0].fecha_limite_ddjj;
-        schedule.scheduleJob(`0 0 ${fechaLimite} * *`, ejecutarDDJJRecursivo);
-        console.log(`Tarea programada para el día ${fechaLimite} de cada mes.`);
+
+        // Ejecutar a las 23:59 del día indicado
+        schedule.scheduleJob(`50 23 ${fechaLimite} * *`, ejecutarDDJJRecursivo);
+
+        console.log(`Tarea programada para el día ${fechaLimite} de cada mes a las 23:50.`);
     } catch (error) {
         console.error("Error programando la tarea:", error.message);
     }
 };
+
 
 /**
  * Verifica si la fecha límite de DDJJ ya pasó y ejecuta el proceso si es necesario.
@@ -289,7 +293,7 @@ const verificarYEjecutarDDJJ = async () => {
         const fechaLimite = rows[0].fecha_limite_ddjj;
         const today = new Date().getDate();
 
-        if (today >= fechaLimite) {
+        if (today > fechaLimite) {
             console.log("La fecha límite ya pasó este mes. Ejecutando DDJJ ahora...");
             await ejecutarDDJJRecursivo();
         }
