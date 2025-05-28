@@ -130,34 +130,47 @@ exports.addDdjj = async (id_contribuyente, id_comercio, monto, descripcion, carg
  */
 exports.getAllDDJJ = async () => {
     return new Promise((resolve, reject) => {
-        const sql = `SELECT
-                        d.*,
+        const sql = `SELECT 
+                        d.id_contribuyente,
+                        d.id_comercio,
+                        d.fecha,
+                        d.monto AS monto_ddjj,
+                        d.descripcion AS descripcion_ddjj,
+                        d.cargada_en_tiempo,
+                        d.tasa_calculada,
+                        d.cargada_rafam,
+                        d.rectificada,
                         c.cuit,
-                        co.cod_comercio,
-                        co.nombre_comercio,
-                        r.id_rectificacion,                        
-                        r.cantidad_rectificaciones,
-                        r.enviada
-                    FROM ddjj d
-                    JOIN contribuyente c ON d.id_contribuyente = c.id_contribuyente
-                    JOIN comercio co ON d.id_comercio = co.id_comercio
-                    LEFT JOIN (
-                        SELECT DISTINCT ON (id_contribuyente, id_comercio, fecha)
-                            id_rectificacion,
-                            id_contribuyente,
-                            id_comercio,
-                            fecha,
-                            descripcion,
-                            monto,
-                            tasa,
-                            cantidad_rectificaciones,
-                            enviada
-                        FROM rectificacion
-                        ORDER BY id_contribuyente, id_comercio, fecha, id_rectificacion DESC
-                    ) r ON d.id_contribuyente = r.id_contribuyente
-                        AND d.id_comercio = r.id_comercio
-                        AND d.fecha = r.fecha
-                    ORDER BY d.id_contribuyente, d.id_comercio, d.fecha;`;
+                        com.nombre_comercio,
+                        com.cod_comercio,
+                        COALESCE(
+                            json_agg(
+                                json_build_object(
+                                    'id_rectificacion', r.id_rectificacion,
+                                    'monto', r.monto,
+                                    'descripcion', r.descripcion,
+                                    'tasa', r.tasa,
+                                    'enviada', r.enviada,
+                                    'cantidad_rectificaciones', r.cantidad_rectificaciones
+                                )
+                            ) FILTER (WHERE r.id_rectificacion IS NOT NULL), '[]'
+                        ) AS rectificaciones
+                    FROM
+                        ddjj d
+                    JOIN contribuyente c using (id_contribuyente)
+                            join comercio com using (id_comercio)
+                    LEFT JOIN
+                        rectificacion r
+                    ON
+                        d.id_contribuyente = r.id_contribuyente AND
+                        d.id_comercio = r.id_comercio AND
+                        d.fecha = r.fecha
+                    GROUP BY
+                        d.id_contribuyente, d.id_comercio, d.fecha, d.monto, d.descripcion,
+                        d.cargada_en_tiempo, d.tasa_calculada, d.cargada_rafam, d.rectificada,
+                        c.cuit, com.nombre_comercio, com.id_comercio
+                    ORDER BY d.fecha;
+                    `;
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener las ddjj' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas

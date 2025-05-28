@@ -7,6 +7,7 @@ const cors = require('cors');
 const http = require('http'); // Añadir http
 const socketIo = require('socket.io'); // Importar socket.io
 const { isObject } = require('util');
+const { isKeyObject } = require('util/types');
 
 const app = express();
 
@@ -66,6 +67,8 @@ app.use('/api', require('./routes/RectificacionRoutes.js')(io));
 app.use('/api', require('./routes/ExpirationDateRoutes.js')(io));
 //para las configuraciones generales
 app.use('/api', require('./routes/ConfigurationRoutes')(io));
+
+app.use('/api', require('./routes/NotificationRoutes')(io));
 
 
 // Selección del puerto según el modo

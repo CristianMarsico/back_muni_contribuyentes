@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
-const { addRectificacion, addRectificar, updateStateSendRectificar } = require("../controllers/RectificacionController.js");
+const { addRectificar, updateStateSendRectificar } = require("../controllers/RectificacionController.js");
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 
 
@@ -55,6 +55,6 @@ module.exports = (io) => {
      *   .then(data => console.log(data));
      */
     router.put("/rectificar/:id_taxpayer/:id_trade/:id_date", AuthMiddleware, (req, res) => addRectificar(req, res, io));
-    router.put("/rectificar/:id_taxpayer/:id_trade/:id_date/:id_rectificacion", AuthMiddleware, (req, res) => updateStateSendRectificar(req, res, io));
+    router.put("/rectificar/:id_rectificacion", AuthMiddleware, (req, res) => updateStateSendRectificar(req, res, io));
     return router;
 };

@@ -1,69 +1,15 @@
 "use strict";
 const {
-    addRectificacion, rectificar, updateStateRectificar
+    addRectificacion, updateStateRectificar
 } = require('../models/RectificacionModel.js');
+
+const {
+   addNotificacion
+} = require('../models/NotificationModel.js');
 
 const {
     getAllConfig
 } = require('../models/ConfigurarionModel.js');
-
-/**
- * Controlador para agregar una nueva DDJJ (Declaración Jurada) de un contribuyente y comercio.
- * 
- * Este controlador maneja la solicitud para agregar una nueva DDJJ. Valida que los datos del contribuyente, 
- * comercio, monto y descripción sean correctos y completos. Luego calcula la tasa aplicable y verifica si 
- * la DDJJ fue cargada dentro del tiempo permitido. Si todo es correcto, agrega la DDJJ en la base de datos 
- * y emite un evento para notificar a los clientes conectados.
- * 
- * @param {Object} req - El objeto de la solicitud que contiene los datos de la nueva DDJJ.
- * @param {Object} res - El objeto de la respuesta utilizado para devolver los resultados o un mensaje de error.
- * @param {Object} io - El objeto de Socket.IO utilizado para emitir eventos en tiempo real.
- * 
- * @returns {Object} - Respuesta JSON con el mensaje de éxito y los datos de la nueva DDJJ o un mensaje de error.
- * 
- * @example
- * // Ejemplo de uso:
- * app.post('/ddjj', addDdjjController);
- */
-exports.addRectificacion = async (req, res, io) => {
-    const { id_contribuyente, id_comercio, monto, descripcion } = req.body;
-    // try {
-    //     if (!id_contribuyente || !id_comercio || !monto || monto <= 0) return res.status(400).json({ error: 'Datos inválidos o incompletos.' });
-
-    //     const configuracion = await getAllConfig();
-    //     if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
-
-    //     const diaActual = new Date().getDate();
-    //     const diaLimite = configuracion[0].fecha_limite_ddjj;
-
-    //     let cargadaEnTiempo = true;
-
-    //     let montoFinal = monto;
-    //     let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
-
-    //     const montoMinimo = configuracion[0].monto_defecto || 0;
-
-
-    //     // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
-    //     if (tasa_calculada < montoMinimo) {
-    //         tasa_calculada = montoMinimo
-    //     }
-    //     //EN CASO DE QUE SUPERE LA FECHA
-    //     if (diaActual >= diaLimite) {
-    //         return res.status(404).json({ error: 'Su DDJJ ha sido cargada por el sistema. Debe RECTIFICAR' });
-    //     }
-
-    //     //AGREGO LA DDJJ
-    //     const nuevaDdjj = await addDdjj(id_contribuyente, id_comercio, montoFinal, descripcion, cargadaEnTiempo, tasa_calculada);
-    //     if (!nuevaDdjj) return res.status(404).json({ error: 'No se pudo agregar la DDJJ.' });
-
-    //     io.emit('nueva-ddjj', { nuevaDdjj });
-    //     return res.status(200).json({ message: 'DDJJ registrada exitosamente.', data: nuevaDdjj });
-    // } catch (error) {
-    //     return res.status(500).json({ error: 'Error en el servidor' });
-    // }
-};
-
 
 /**
  * Controlador para rectificar una Declaración Jurada Jurada (DDJJ).
@@ -86,7 +32,7 @@ exports.addRectificacion = async (req, res, io) => {
 exports.addRectificar = async (req, res, io) => {
 
     const { id_taxpayer, id_trade, id_date } = req.params;
-    const { monto, mes } = req.body;
+    const { monto, mes, cuit, cod_comercio } = req.body;   
 
     const fechaRectificacion = new Date();
 
@@ -105,32 +51,31 @@ exports.addRectificar = async (req, res, io) => {
         // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
         if (tasa_calculada < montoMinimo) {
             tasa_calculada = montoMinimo
-        }
+        }     
 
-        let rectificada = await rectificar(id_taxpayer, id_trade, id_date, montoFinal, tasa_calculada, mes, fechaFormateada);
+        let rectificada = await addRectificacion(id_taxpayer, id_trade, id_date, montoFinal, tasa_calculada, mes, fechaFormateada)
+        
+        if (!rectificada) return res.status(404).json({ error: 'No se pudo rectificar la DDJJ.' });
+        
+        // Registrar notificación separadamente
+        const notificacion = await addNotificacion(
+            false,
+            fechaFormateada,
+            cuit,
+            montoFinal,
+            cod_comercio,
+            mes
+        );
 
-        if (rectificada.rowCount > 0) {
-            io.emit('rectificada', {
-                id_taxpayer,
-                id_trade,
-                id_date
-            });
-            addRectificacion(id_taxpayer, id_trade, id_date, montoFinal, tasa_calculada, mes, fechaFormateada)
+        io.emit('addRectificacion', { rectificada });        
+        io.emit('nuevaNotificacion', notificacion);
+        
+        return res.status(200).json({ message: 'Rectificación registrada exitosamente.', data: rectificada });
 
-            return res.status(200).json({
-                message: "La DDJJ ha sido rectificada con éxito",
-                data: rectificada
-            });
-
-        } else {
-            return res.status(404).json({ error: "La ddjj no se pudo rectificar" });
-        }
     } catch (error) {
         return res.status(500).json({ error: "Error de servidor" });
     }
 };
-
-
 
 
 /**
@@ -152,19 +97,16 @@ exports.addRectificar = async (req, res, io) => {
  * app.put('/ddjj/:id_taxpayer/:id_trade/:id_date', updateStateSendRafamController);
  */
 exports.updateStateSendRectificar = async (req, res, io) => {
-    const { id_taxpayer, id_trade, id_date, id_rectificacion } = req.params;
-    if (!id_taxpayer || !id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
+    const { id_rectificacion } = req.params;
+    if (!id_rectificacion) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
     try {
-        let updatedActive = await updateStateRectificar(id_taxpayer, id_trade, id_date, id_rectificacion);
+        let updatedActive = await updateStateRectificar(id_rectificacion);
 
         if (updatedActive.rowCount > 0) {
-            io.emit('ddjj-rectificar', {
-                id_taxpayer,
-                id_trade,
-                id_date,
-                id_rectificacion,
-                enviada: true
-            });
+            // io.emit('ddjj-rectificar', {                
+            //     id_rectificacion,
+            //     enviada: true
+            // });
             return res.status(200).json({
                 message: "Marcada, recuerde enviarla a RAFAM",
                 data: updatedActive
