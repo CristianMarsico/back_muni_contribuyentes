@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 //HACEMOS USO DE LOS CONTROLADORES
-const { getAll, editActive, getWithTrade, deleteTaxpayer } = require("../controllers/TaxpayerController.js");
+const { getAll, editActive, getWithTrade, deleteTaxpayer, editGoodTaxpayer } = require("../controllers/TaxpayerController.js");
 const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
 const { UploadedDDJJ } = require('../middlewares/UploadedDDJJ.js');
 
@@ -35,7 +35,9 @@ module.exports = (io) => {
   * @param {Object} io - Objeto de Socket.io para emitir eventos en tiempo real.
   * @returns {JSON} Respuesta con el estado actualizado o un mensaje de error.
   */
-  router.put("/taxpayer/:id", AuthMiddleware,(req, res) => editActive(req, res, io));
+  router.put("/taxpayer/:id", AuthMiddleware, (req, res) => editActive(req, res, io));
+
+  router.put("/taxpayer/:id/goodTaxpayer", AuthMiddleware, (req, res) => editGoodTaxpayer(req, res, io));
 
   /**
   * Ruta para obtener un contribuyente y sus comercios asociados.

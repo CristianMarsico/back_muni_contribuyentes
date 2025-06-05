@@ -73,7 +73,8 @@ exports.register = async (req, res, io) => {
             hashedPassword,
             razon_social,
             false, // estado inicial del contribuyente (en espera)
-            id_rol[0].id_rol
+            id_rol[0].id_rol,
+            false
         );
 
         if (!nuevoContribuyente) return res.status(404).json({ error: 'No se pudo registrar el contribuyente.' });
@@ -219,7 +220,7 @@ exports.loginTaxpayer = async (req, res) => {
                 apellido: usuario.apellido,
                 cuit: usuario.cuit,
                 rol: rol,
-                estado: usuario.estado,
+                estado: usuario.estado                
             },
             process.env.SECRET_KEY, // Clave secreta para firmar el token
             { expiresIn: '1d' } // El token expirará en 1 día
@@ -240,6 +241,7 @@ exports.loginTaxpayer = async (req, res) => {
             cuit: usuario.cuit,
             rol: rol,
             estado: usuario.estado,
+            buen_contribuyente: usuario.es_buen_contribuyente,
             token
         });
 

@@ -2,7 +2,7 @@
 const { conn } = require('../dataBase/Connection.js');
 
 const {
-    getAll, editActive, getWithTrade, deleteTaxpayer
+    getAll, editActive, getWithTrade, deleteTaxpayer, editActiveGoodTaxpayer
 } = require('../models/TaxpayerModel.js');
 
 const {
@@ -94,6 +94,34 @@ exports.editActive = async (req, res, io) => {
             message: "El contribuyente ha sido dado de alta",
             data: updatedActive
         });
+    } catch (error) {
+        res.status(500).json({ error: "Error de servidor" });
+    }
+};
+
+exports.editGoodTaxpayer = async (req, res, io) => {
+    const { id } = req.params;
+    const { newEstado } = req.body;
+    const msj = (newEstado === true || newEstado === 'true')
+        ? "Cambiado a buen contribuyente"
+        : "No accede al descuento";
+   
+    if (!id) return res.status(400).json({ error: "Faltan datos necesarios para editar" });
+    try {
+        const updatedActive = await editActiveGoodTaxpayer(id, newEstado);
+        if (!updatedActive) return res.status(404).json({ error: "No fue posible modificarlo" });
+
+        // Emitir el estado actualizado con los datos necesarios
+        io.emit("goodTaxpayer-actualizado", {
+            id_contribuyente: updatedActive.id_contribuyente,
+            es_buen_contribuyente: updatedActive.es_buen_contribuyente
+        });
+
+        return res.status(200).json({
+            message: msj,
+            data: updatedActive
+        });
+
     } catch (error) {
         res.status(500).json({ error: "Error de servidor" });
     }

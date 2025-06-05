@@ -52,16 +52,17 @@ exports.getAllConfig = () => {
  *   .then(result => console.log(result)) // Resultado de la actualización
  *   .catch(error => console.error(error)); // Manejo de errores
  */
-exports.updateConfigurationValues = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual) => {
+exports.updateConfigurationValues = async (id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual, porcentaje_buen_contribuyente) => {
     const query = `
         UPDATE configuracion
         SET 
             fecha_limite_ddjj = $1,
             tasa_actual = $2,
-            monto_defecto = $3           
-        WHERE id_configuracion = $4;
+            monto_defecto = $3,
+            porcentaje_buen_contribuyente = $4
+        WHERE id_configuracion = $5;
     `;
-    const values = [fecha_limite_ddjj, tasa_actual, monto_ddjj_defecto, id];
+    const values = [fecha_limite_ddjj, tasa_actual, monto_ddjj_defecto, porcentaje_buen_contribuyente, id];
     try {
         const result = await conn.query(query, values);
         return result;

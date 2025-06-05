@@ -50,7 +50,7 @@ exports.getAll = async (req, res) => {
  */
 exports.updateConfigurationValues = async (req, res, io) => {
     const { id } = req.params;
-    const { fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual } = req.body;
+    const { fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual, porcentaje_buen_contribuyente } = req.body;
 
     if (fecha_limite_ddjj > 31)
         return res.status(404).json({ error: 'La fecha no debe superar el dia 31' });
@@ -60,14 +60,14 @@ exports.updateConfigurationValues = async (req, res, io) => {
         return res.status(404).json({ error: 'Todos los campos son obligatorios' });
     }
 
-    if (isNaN(fecha_limite_ddjj) || isNaN(monto_ddjj_defecto) || isNaN(tasa_actual)) {
+    if (isNaN(fecha_limite_ddjj) || isNaN(monto_ddjj_defecto) || isNaN(tasa_actual) || isNaN(porcentaje_buen_contribuyente)) {
         return res.status(404).json({ error: 'Los valores deben ser números válidos' });
     }
 
     try {
         // Llamar al modelo para actualizar la configuración
         const result = await updateConfigurationValues(
-            id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual
+            id, fecha_limite_ddjj, monto_ddjj_defecto, tasa_actual, porcentaje_buen_contribuyente
         );
         // Si la actualización fue exitosa
         if (result.rowCount > 0) {

@@ -30,31 +30,62 @@ const { conn } = require('../dataBase/Connection.js');
 exports.getByYearTradeMonth = (id_taxpayer, id_trade, year, month) => {   
     return new Promise((resolve, reject) => {
         let query = `
-            SELECT c.cuit, com.cod_comercio, d.* 
+            SELECT 
+                d.id_contribuyente,
+                d.id_comercio,
+                d.fecha,
+                d.monto AS monto_ddjj,
+                d.descripcion AS descripcion_ddjj,
+                d.cargada_en_tiempo,
+                d.tasa_calculada,
+                d.cargada_rafam,
+                d.rectificada,
+                c.cuit,
+                c.es_buen_contribuyente,
+                com.nombre_comercio,
+                com.cod_comercio,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id_rectificacion', r.id_rectificacion,
+                            'monto', r.monto,
+                            'descripcion', r.descripcion,
+                            'tasa', r.tasa,
+                            'enviada', r.enviada,
+                            'cantidad_rectificaciones', r.cantidad_rectificaciones
+                        )
+                    ) FILTER (WHERE r.id_rectificacion IS NOT NULL), '[]'
+                ) AS rectificaciones
             FROM ddjj d
             JOIN contribuyente c ON c.id_contribuyente = d.id_contribuyente
-            JOIN comercio com ON d.id_comercio = com.id_comercio
-            WHERE c.id_contribuyente = $1 
-            AND d.id_comercio = $2`;
+            JOIN comercio com ON com.id_comercio = d.id_comercio
+            LEFT JOIN rectificacion r 
+                ON d.id_contribuyente = r.id_contribuyente 
+                AND d.id_comercio = r.id_comercio 
+                AND d.fecha = r.fecha
+            WHERE d.id_contribuyente = $1 
+              AND d.id_comercio = $2`;
 
         const values = [id_taxpayer, id_trade];
 
         if (month) {
-            // Si se especifica un mes exacto, ajustar la búsqueda a ese mes y año
-           
-            query += ` AND EXTRACT(YEAR FROM fecha) = $3 AND EXTRACT(MONTH FROM fecha) = $4`;
+            query += ` AND EXTRACT(YEAR FROM d.fecha) = $3 AND EXTRACT(MONTH FROM d.fecha) = $4`;
             values.push(year, month);
         } else {
-            // Si no hay mes, usar el rango de búsqueda por defecto
-           
             query += ` AND (
-                (EXTRACT(YEAR FROM fecha) = $3 AND EXTRACT(MONTH FROM fecha) >= 2) 
+                (EXTRACT(YEAR FROM d.fecha) = $3 AND EXTRACT(MONTH FROM d.fecha) >= 2) 
                 OR 
-                (EXTRACT(YEAR FROM fecha) = $3 + 1 AND EXTRACT(MONTH FROM fecha) = 1)
+                (EXTRACT(YEAR FROM d.fecha) = $3 + 1 AND EXTRACT(MONTH FROM d.fecha) = 1)
             )`;
             values.push(year);
         }
-        query += ' ORDER BY fecha';
+
+        query += `
+            GROUP BY 
+                d.id_contribuyente, d.id_comercio, d.fecha, d.monto, d.descripcion,
+                d.cargada_en_tiempo, d.tasa_calculada, d.cargada_rafam, d.rectificada,
+                c.cuit, c.es_buen_contribuyente, com.nombre_comercio, com.cod_comercio
+            ORDER BY d.fecha`;
 
         conn.query(query, values, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener los comercios del contribuyente' });
@@ -141,6 +172,7 @@ exports.getAllDDJJ = async () => {
                         d.cargada_rafam,
                         d.rectificada,
                         c.cuit,
+                        c.es_buen_contribuyente,
                         com.nombre_comercio,
                         com.cod_comercio,
                         COALESCE(
@@ -168,7 +200,7 @@ exports.getAllDDJJ = async () => {
                     GROUP BY
                         d.id_contribuyente, d.id_comercio, d.fecha, d.monto, d.descripcion,
                         d.cargada_en_tiempo, d.tasa_calculada, d.cargada_rafam, d.rectificada,
-                        c.cuit, com.nombre_comercio, com.id_comercio
+                        c.cuit, c.es_buen_contribuyente, com.nombre_comercio, com.id_comercio
                     ORDER BY d.fecha;
                     `;
         conn.query(sql, (err, resultados) => {

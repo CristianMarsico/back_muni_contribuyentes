@@ -30,14 +30,14 @@ const {conn} = require('../dataBase/Connection.js');
  *   .then(data => console.log(data))
  *   .catch(error => console.error(error));
  */
-exports.register = async (nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol) => {
+exports.register = async (nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol, es_buen_contribuyente) => {
     try {
         const query = `
-      INSERT INTO contribuyente (nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING id_contribuyente, nombre, apellido, cuit, email, direccion, telefono, razon_social, estado, id_rol
+      INSERT INTO contribuyente (nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol, es_buen_contribuyente)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING id_contribuyente, nombre, apellido, cuit, email, direccion, telefono, razon_social, estado, id_rol, es_buen_contribuyente
     `;
-        const result = await conn.query(query, [nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol]);
+        const result = await conn.query(query, [nombre, apellido, cuit, email, direccion, telefono, password, razon_social, estado, id_rol, es_buen_contribuyente]);
         return result.rows[0]; // Devuelve todos los datos del contribuyente
     } catch (error) {      
         throw new Error('Error al registrar contribuyente.');
@@ -86,7 +86,7 @@ exports.getUserWithRole = async (usuario) => {
  */
 exports.getTaxpayerWithRole = async (cuit) => {
     return new Promise((resolve, reject) => {
-        const sql = `SELECT c.id_contribuyente, c.nombre, c.apellido, c.cuit, c.password, c.id_rol, c.estado, r.rol
+        const sql = `SELECT c.id_contribuyente, c.nombre, c.apellido, c.cuit, c.password, c.id_rol, c.es_buen_contribuyente, c.estado, r.rol
                  FROM contribuyente c
                  INNER JOIN rol r ON c.id_rol = r.id_rol
                  WHERE c.cuit = $1`;

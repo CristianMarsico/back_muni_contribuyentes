@@ -142,8 +142,8 @@ const initializeDataConfigDefault = async () => {
             return;
         }
         // Crear fechas por defecto
-        const sql = `insert into configuracion (id_configuracion, fecha_limite_ddjj, tasa_actual, monto_defecto, whatsapp, email, telefono, direccion, facebook, instagram)
-                                                    values (1, 27, 0.08, 9999, 2262545454, 'info@municipio.gob.ar', 2261445454, 'Italia 67', 'www.facebook.com/municipalidadloberia', 'www.instagram.com/muniloberia') `;
+        const sql = `insert into configuracion (id_configuracion, fecha_limite_ddjj, tasa_actual, monto_defecto, whatsapp, email, telefono, direccion, facebook, instagram, porcentaje_buen_contribuyente)
+                                                    values (1, 27, 0.08, 9999, 2262545454, 'info@municipio.gob.ar', 2261445454, 'Italia 67', 'www.facebook.com/municipalidadloberia', 'www.instagram.com/muniloberia', 0.15) `;
         await conn.query(sql);
         console.log(`Configuraciones generales cargadas`);
     } catch (error) {

@@ -23,7 +23,19 @@ const {conn} = require('../dataBase/Connection.js');
  */
 exports.getAll = () => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM contribuyente ORDER BY estado, cuit';
+        const sql = `SELECT apellido, 
+                            cuit, 
+                            direccion, 
+                            email, 
+                            es_buen_contribuyente,
+                            estado, 
+                            id_contribuyente,
+                            id_rol, 
+                            nombre, 
+                            razon_social, 
+                            telefono
+                     FROM contribuyente 
+                     ORDER BY estado, cuit`;
         conn.query(sql, (err, resultados) => {
             if (err) return reject({ status: 500, message: 'Error al obtener los contribuyentes' });
             if (resultados && resultados.rows.length > 0) return resolve(resultados.rows); // Devuelve solo las filas
@@ -63,6 +75,19 @@ exports.editActive = async (id) => {
         RETURNING id_contribuyente, estado;
     `;
     const values = [id];
+
+    const result = await conn.query(query, values);
+    return result.rows[0];
+};
+
+exports.editActiveGoodTaxpayer = async (id, newEstado) => {
+    const query = `
+        UPDATE CONTRIBUYENTE
+        SET es_buen_contribuyente = $1
+        WHERE id_contribuyente = $2
+        RETURNING id_contribuyente, es_buen_contribuyente;
+    `;
+    const values = [newEstado, id];
 
     const result = await conn.query(query, values);
     return result.rows[0];
