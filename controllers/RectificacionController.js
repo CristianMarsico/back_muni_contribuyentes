@@ -12,28 +12,37 @@ const {
 } = require('../models/ConfigurarionModel.js');
 
 /**
- * Controlador para rectificar una Declaración Jurada Jurada (DDJJ).
+ * Controlador para agregar una nueva rectificación de DDJJ y generar una notificación asociada.
  * 
- * Este controlador maneja la solicitud para actualizar una DDJJ existente, rectificando su monto, 
- * tasa calculada y añadiendo una descripción. Si la rectificación es exitosa, se emite un evento 
- * mediante `io.emit` y se devuelve una respuesta confirmando el éxito.
+ * Este controlador toma los datos necesarios desde la URL y el cuerpo del request para:
+ * 1. Calcular la nueva tasa con lógica de buen contribuyente.
+ * 2. Registrar la rectificación en la base de datos.
+ * 3. Registrar una notificación de dicha acción.
+ * 4. Emitir los eventos por WebSocket a los clientes conectados.
  * 
- * @param {Object} req - Objeto de solicitud que contiene los parámetros `id_taxpayer`, `id_trade` e `id_date`.
- *                        También incluye los datos del cuerpo de la solicitud como `monto`, `mes` y `fecha`.
- * @param {Object} res - Objeto de respuesta utilizado para devolver los resultados o un mensaje de error.
- * @param {Object} io - Objeto `io` utilizado para emitir eventos mediante WebSockets.
+ * @param {Object} req - Objeto de la solicitud con:
+ *     - params: { id_taxpayer, id_trade, id_date }
+ *     - body: { monto, mes, cuit, cod_comercio, es_buen_contribuyente }
+ * @param {Object} res - Objeto de la respuesta HTTP.
+ * @param {Object} io - Instancia de WebSocket para emitir eventos en tiempo real.
  * 
- * @returns {Object} - Respuesta JSON con el resultado de la operación o un mensaje de error si la rectificación falla.
+ * @returns {Object} JSON con mensaje de éxito y datos de la rectificación o mensaje de error.
  * 
  * @example
- * // Ejemplo de uso:
- * router.put("/rectificar/:id_taxpayer/:id_trade/:id_date", rectificarController);
+ * PUT /api/rectificar/1/3/2025-06-01
+ * body: {
+ *   monto: 15000,
+ *   mes: "Junio",
+ *   cuit: "20123456789",
+ *   cod_comercio: "A123",
+ *   es_buen_contribuyente: true
+ * }
  */
 exports.addRectificar = async (req, res, io) => {
 
     const { id_taxpayer, id_trade, id_date } = req.params;
-    const { monto, mes, cuit, cod_comercio } = req.body;   
-
+    const { monto, mes, cuit, cod_comercio, es_buen_contribuyente } = req.body;   
+   
     const fechaRectificacion = new Date();
 
     const fechaFormateada = fechaRectificacion.toISOString().split("T")[0];
@@ -41,18 +50,28 @@ exports.addRectificar = async (req, res, io) => {
     if (!id_taxpayer || !id_trade || !id_date) return res.status(404).json({ error: "Faltan datos necesarios para editar" });
 
     try {
-        const configuracion = await getAllConfig();
+        const configuracion = await getAllConfig();     
         if (!configuracion) return res.status(500).json({ error: 'Error al obtener la configuración.' });
+
+        const tasa_actual = parseFloat(configuracion[0].tasa_actual);
+        const montoMinimo = parseFloat(configuracion[0].monto_defecto || 0);
+        const porcentaje_buen_contribuyente = parseFloat(configuracion[0].porcentaje_buen_contribuyente);
+
         let montoFinal = monto;
-        let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
+        let tasa_calculada = montoFinal * tasa_actual;      
 
-        const montoMinimo = configuracion[0].monto_defecto || 0;
-
-        // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
-        if (tasa_calculada < montoMinimo) {
-            tasa_calculada = montoMinimo
-        }     
-
+        if (es_buen_contribuyente) {
+            if (tasa_calculada < montoMinimo)               
+                tasa_calculada = montoMinimo - (montoMinimo * porcentaje_buen_contribuyente);
+             else             
+                tasa_calculada = tasa_calculada - (tasa_calculada * porcentaje_buen_contribuyente);
+        }else{
+            if (tasa_calculada < montoMinimo) 
+                tasa_calculada = montoMinimo;
+             else 
+                tasa_calculada = tasa_calculada;
+        }
+        
         let rectificada = await addRectificacion(id_taxpayer, id_trade, id_date, montoFinal, tasa_calculada, mes, fechaFormateada)
         
         if (!rectificada) return res.status(404).json({ error: 'No se pudo rectificar la DDJJ.' });
@@ -76,7 +95,6 @@ exports.addRectificar = async (req, res, io) => {
         return res.status(500).json({ error: "Error de servidor" });
     }
 };
-
 
 /**
  * Controlador para actualizar el estado 'cargada_rafam' de una DDJJ.

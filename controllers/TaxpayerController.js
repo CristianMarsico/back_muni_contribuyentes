@@ -8,6 +8,7 @@ const {
 const {
     deleteTradesWithoutDDJJ, backupComercios
 } = require('../models/TradeModel.js');
+
 /**
  * Controlador para obtener todos los contribuyentes de la base de datos.
  * 
@@ -99,6 +100,15 @@ exports.editActive = async (req, res, io) => {
     }
 };
 
+/**
+ * Controlador para editar el estado de "buen contribuyente".
+ * 
+ * @param {Object} req - Objeto de solicitud HTTP (con `id` en `params` y `newEstado` en `body`).
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @param {Object} io - Instancia de socket.io para emitir eventos.
+ * 
+ * @returns {Object} - Respuesta con mensaje y datos actualizados.
+ */
 exports.editGoodTaxpayer = async (req, res, io) => {
     const { id } = req.params;
     const { newEstado } = req.body;
@@ -127,6 +137,17 @@ exports.editGoodTaxpayer = async (req, res, io) => {
     }
 };
 
+/**
+ * Controlador para eliminar un contribuyente y sus comercios sin DDJJ.
+ * 
+ * Realiza un respaldo de comercios, elimina los que no tienen DDJJ y luego elimina el contribuyente.
+ * 
+ * @param {Object} req - Objeto de solicitud HTTP con el ID del contribuyente.
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * @param {Object} io - Instancia de socket.io para emitir eventos.
+ * 
+ * @returns {Object} - Mensaje de éxito o error.
+ */
 exports.deleteTaxpayer = async (req, res, io) => {
      const { id } = req.params;
 

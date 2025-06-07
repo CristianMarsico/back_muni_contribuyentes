@@ -14,19 +14,7 @@ const { AuthMiddleware } = require('../middlewares/AuthMiddleware.js');
  * @returns {import('express').Router} Router con las rutas definidas.
  */
 module.exports = (io) => {
-    // /**
-    //  * Persiste los datos de un nuevo comercio en la base de datos y emite un evento.
-    //  * @name POST /trade
-    //  * @function
-    //  * @memberof module:routes/trade
-    //  * @param {Object} req - Objeto de solicitud HTTP.
-    //  * @param {Object} res - Objeto de respuesta HTTP.
-    //  * @param {Object} io - Objeto de Socket.io para emitir eventos en tiempo real.
-    //  * @returns {JSON} Mensaje de éxito o error en caso de fallo.
-    //  */
-    // router.post("/rectificar", AuthMiddleware, (req, res) => addRectificacion(req, res, io));
-
-
+    
     /**
      * Ruta para rectificar una DDJJ.
      * 
@@ -55,6 +43,17 @@ module.exports = (io) => {
      *   .then(data => console.log(data));
      */
     router.put("/rectificar/:id_taxpayer/:id_trade/:id_date", AuthMiddleware, (req, res) => addRectificar(req, res, io));
+    
+    /**
+     * Ruta para actualizar el estado de una rectificación de DDJJ, marcándola como enviada.
+     * 
+     * @name PUT /rectificar/:id_rectificacion
+     * @function
+     * @memberof module:routes/rectificacion
+     * @param {string} id_rectificacion - ID de la rectificación a actualizar.
+     * @middleware AuthMiddleware - Requiere autenticación.
+     * @returns {JSON} Respuesta con la rectificación actualizada o un mensaje de error.
+     */
     router.put("/rectificar/:id_rectificacion", AuthMiddleware, (req, res) => updateStateSendRectificar(req, res, io));
     return router;
 };

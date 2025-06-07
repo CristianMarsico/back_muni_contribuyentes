@@ -1,6 +1,21 @@
 "use strict";
 const { conn } = require('../dataBase/Connection.js');
 
+/**
+ * Modelo para agregar una nueva notificación en la base de datos.
+ * 
+ * @async
+ * @function
+ * @param {boolean} leida - Estado de lectura de la notificación.
+ * @param {string} fecha - Fecha de la notificación (formato ISO).
+ * @param {string} cuit - CUIT del contribuyente.
+ * @param {number} monto - Monto relacionado a la notificación.
+ * @param {string} codigo_comercio - Código del comercio asociado.
+ * @param {string} mes - Mes al que corresponde la notificación.
+ * 
+ * @returns {Object} Objeto de la notificación insertada.
+ * @throws {Error} Error al insertar la notificación.
+ */
 exports.addNotificacion = async (leida, fecha, cuit, monto, codigo_comercio, mes) => {
     try {
         const notifQuery = `
@@ -45,8 +60,6 @@ exports.getAllNotifications = () => {
         });
     });
 };
-
-
 
 /**
  * Servicio para actualizar el estado 'cargada_rafam' de una DDJJ a true.

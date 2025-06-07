@@ -62,7 +62,7 @@ exports.getByYearTradeMonth = async (req, res) => {
  * app.post('/ddjj', addDdjjController);
  */
 exports.addDdjj = async (req, res, io) => {
-    const { id_contribuyente, id_comercio, monto, descripcion } = req.body;
+    const { id_contribuyente, id_comercio, monto, descripcion, buen_contribuyente } = req.body;
     try {
         if (!id_contribuyente || !id_comercio || !monto || monto <= 0) return res.status(400).json({ error: 'Datos inválidos o incompletos.' });
 
@@ -74,16 +74,25 @@ exports.addDdjj = async (req, res, io) => {
 
         let cargadaEnTiempo = true;
 
+        const tasa_actual = parseFloat(configuracion[0].tasa_actual);
+        const montoMinimo = parseFloat(configuracion[0].monto_defecto || 0);
+        const porcentaje_buen_contribuyente = parseFloat(configuracion[0].porcentaje_buen_contribuyente);
+
         let montoFinal = monto;
-        let tasa_calculada = montoFinal * configuracion[0].tasa_actual;
+        let tasa_calculada = montoFinal * tasa_actual;
 
-        const montoMinimo = configuracion[0].monto_defecto || 0;
-        
-
-        // Si la tasa calculada es menor que el monto mínimo, se cobra el monto mínimo
-        if (tasa_calculada < montoMinimo) {            
-            tasa_calculada = montoMinimo
+        if (buen_contribuyente) {
+            if (tasa_calculada < montoMinimo)
+                tasa_calculada = montoMinimo - (montoMinimo * porcentaje_buen_contribuyente);
+            else
+                tasa_calculada = tasa_calculada - (tasa_calculada * porcentaje_buen_contribuyente);
+        } else {
+            if (tasa_calculada < montoMinimo)
+                tasa_calculada = montoMinimo;
+            else
+                tasa_calculada = tasa_calculada;
         }
+
         //EN CASO DE QUE SUPERE LA FECHA
         if (diaActual >= diaLimite) {
             return res.status(404).json({ error: 'Su DDJJ ha sido cargada por el sistema. Debe RECTIFICAR' });

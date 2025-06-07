@@ -4,8 +4,6 @@ const {
 } = require('../models/NotificationModel.js');
 
 
-
-
 /**
  * Controlador para obtener todas las configuraciones.
  * 
@@ -32,7 +30,6 @@ exports.getNotifications = async (req, res) => {
         return res.status(500).json({ error: "Error de servidor" });
     }
 };
-
 
 /**
  * Controlador para actualizar el estado 'cargada_rafam' de una DDJJ.
@@ -73,4 +70,3 @@ exports.marcarLeida = async (req, res, io) => {
         return res.status(500).json({ error: "Error de servidor" });
     }
 };
-

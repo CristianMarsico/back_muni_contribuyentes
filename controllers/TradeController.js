@@ -169,7 +169,6 @@ exports.newTrade = async (req, res, io) => {
     }
 };
 
-
 /**
  * Controlador para cambiar el estado de un comercio a "inactivo".
  * 

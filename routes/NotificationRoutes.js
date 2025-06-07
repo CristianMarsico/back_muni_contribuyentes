@@ -27,6 +27,16 @@ module.exports = (io) => {
   */
     router.get("/notification", AuthMiddleware, getNotifications);
 
+    /**
+  * Ruta para marcar una notificación como leída.
+  * 
+  * @name PUT /notification/leida/:id
+  * @function
+  * @memberof module:routes/notification
+  * @param {string} id - ID de la notificación.
+  * @middleware AuthMiddleware - Requiere autenticación.
+  * @returns {JSON} Respuesta confirmando que la notificación fue marcada como leída o un error.
+  */
     router.put("/notification/leida/:id", AuthMiddleware, (req, res) => marcarLeida(req, res, io));
 
   

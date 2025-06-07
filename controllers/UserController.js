@@ -89,6 +89,21 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+/**
+ * Controlador para obtener usuarios según su rol.
+ * 
+ * Este controlador recibe un rol por parámetro y busca su ID correspondiente.
+ * Luego, obtiene todos los usuarios asociados a ese rol.
+ * 
+ * @param {Object} req - Objeto de solicitud HTTP, con el parámetro `rol`.
+ * @param {Object} res - Objeto de respuesta HTTP.
+ * 
+ * @returns {Object} - Respuesta JSON con los usuarios o un mensaje de error.
+ * 
+ * @example
+ * // Ejemplo de uso:
+ * app.get('/user/admin', getUser);
+ */
 exports.getUser = async (req, res) => {
     const { rol } = req.params;    
     try {
@@ -170,6 +185,26 @@ exports.updatePass = async (req, res) => {
     }
 };
 
+/**
+ * Controlador para actualizar los datos de un usuario.
+ * 
+ * Este controlador valida la contraseña actual del usuario antes de permitir la actualización.
+ * Si la contraseña es correcta, encripta la nueva contraseña y actualiza los datos en la base de datos.
+ * 
+ * @param {Object} req - Objeto de solicitud HTTP. Contiene el id en los parámetros y los nuevos datos en el cuerpo.
+ * @param {Object} res - Objeto de respuesta HTTP. Devuelve el resultado de la operación.
+ * 
+ * @returns {Object} - Respuesta JSON indicando el resultado de la operación.
+ * 
+ * @example
+ * // Ejemplo de solicitud:
+ * PUT /user/5
+ * {
+ *   "usuario": "nuevo_usuario",
+ *   "pass_actual": "mi_contraseña_actual",
+ *   "pass_nueva": "mi_nueva_contraseña"
+ * }
+ */
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const { usuario, pass_actual, pass_nueva } = req.body;

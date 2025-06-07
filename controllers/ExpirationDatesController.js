@@ -63,4 +63,3 @@ exports.updateExipirationDate = async (req, res, io) => {
         res.status(500).json({ error: "Error de servidor" });
     }
 };
-

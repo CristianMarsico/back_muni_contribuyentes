@@ -72,6 +72,19 @@ module.exports = (io) => {
      */
     router.get("/user", AuthMiddleware, getAllUsers);
     
+    /**
+     * Ruta para obtener usuarios según su rol.
+     * 
+     * <p>Esta ruta realiza una solicitud GET a /user/:rol y llama al 
+     * controlador getUser para obtener los usuarios que coincidan con el rol especificado.</p>
+     * 
+     * @route {GET} /user/:rol
+     * @param {string} rol - El nombre del rol (por ejemplo: "admin", "editor").
+     * @returns {Object} Respuesta con el estado de la operación.
+     *  - 200: Si se encuentran usuarios con ese rol.
+     *  - 404: Si no se encuentran usuarios.
+     *  - 500: Si ocurre un error en el servidor.
+     */
     router.get("/user/:rol", AuthMiddleware, getUser);
 
     /**
@@ -112,6 +125,26 @@ module.exports = (io) => {
     */
     router.put("/user/:id/:pass", AuthMiddleware, updatePass);
 
+    /**
+     * Ruta para actualizar los datos de un usuario.
+     * 
+     * <p>Esta ruta realiza una solicitud PUT a /user/:id y llama al controlador updateUser 
+     * para actualizar el nombre de usuario y/o la contraseña, validando previamente la contraseña actual.</p>
+     * 
+     * @route {PUT} /user/:id
+     * @middleware {AuthMiddleware} Verifica que el usuario esté autenticado.
+     * @middleware {CheckAvailableUser} Verifica si el nuevo nombre de usuario está disponible.
+     * 
+     * @param {String} id - ID del usuario a actualizar (en la URL).
+     * @body {String} usuario - Nuevo nombre de usuario.
+     * @body {String} pass_actual - Contraseña actual del usuario.
+     * @body {String} pass_nueva - Nueva contraseña que se desea establecer.
+     * 
+     * @returns {Object} Respuesta con el estado de la operación.
+     *  - 200: Si la actualización fue exitosa.
+     *  - 404: Si la contraseña no coincide o no se pudo actualizar.
+     *  - 500: Si ocurre un error en el servidor.
+     */
     router.put("/user/:id", AuthMiddleware, CheckAvailableUser, updateUser);
 
     return router;

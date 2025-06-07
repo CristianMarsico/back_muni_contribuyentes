@@ -67,6 +67,19 @@ exports.getAllUsers = (id_rol) => {
     });
 };
 
+/**
+ * Servicio para obtener los usuarios según el ID de rol.
+ * 
+ * @param {number} id_rol - ID del rol que se desea consultar.
+ * @returns {Promise<Array>} - Lista de usuarios con ese rol o una lista vacía si no hay coincidencias.
+ * 
+ * @throws {Object} - Error si ocurre un problema al consultar la base de datos.
+ * 
+ * @example
+ * getUser(2)
+ *   .then(users => console.log(users))
+ *   .catch(error => console.error(error));
+ */
 exports.getUser = (id_rol) => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT id_usuario, usuario FROM USUARIO WHERE id_rol = $1`;
@@ -78,6 +91,19 @@ exports.getUser = (id_rol) => {
     });
 };
 
+/**
+ * Servicio para obtener la contraseña de un usuario por su ID.
+ * 
+ * @param {number} id - ID del usuario.
+ * @returns {Promise<Array>} - Devuelve un array con la contraseña si se encuentra.
+ * 
+ * @throws {Object} - Error si ocurre un problema en la base de datos.
+ * 
+ * @example
+ * getPass(1)
+ *   .then(pass => console.log(pass))
+ *   .catch(err => console.error(err));
+ */
 exports.getPass = (id) => {
     return new Promise((resolve, reject) => {
         const sql = `SELECT password FROM USUARIO WHERE id_usuario = $1`;
@@ -88,7 +114,6 @@ exports.getPass = (id) => {
         });
     });
 };
-
 
 /**
  * Servicio para eliminar un usuario de la base de datos.
@@ -172,6 +197,25 @@ exports.updatePass = async (id, pass) => {
     }
 };
 
+/**
+ * Servicio para actualizar los datos de un usuario en la base de datos.
+ * 
+ * Esta función actualiza el nombre de usuario y la contraseña de un usuario específico
+ * según su identificador.
+ * 
+ * @param {String} id - ID del usuario a actualizar.
+ * @param {String} user - Nuevo nombre de usuario.
+ * @param {String} pass - Nueva contraseña encriptada.
+ * 
+ * @returns {Object} - Resultado de la operación SQL.
+ * 
+ * @throws {Error} - Si ocurre un error al ejecutar la consulta en la base de datos.
+ * 
+ * @example
+ * updateUser("5", "nuevo_usuario", "hash1234")
+ *   .then(result => console.log(result))
+ *   .catch(error => console.error(error));
+ */
 exports.updateUser = async (id, user, pass) => {
     const query = `
         UPDATE USUARIO

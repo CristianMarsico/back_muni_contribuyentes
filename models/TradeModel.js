@@ -241,7 +241,12 @@ exports.disabledState = async (id) => {
     return result.rows[0];
 };
 
-
+/**
+ * Elimina los comercios asociados a un contribuyente que no tengan una DDJJ.
+ * 
+ * @param {number} id - ID del contribuyente.
+ * @returns {Promise<Object>} - Resultado de la eliminación.
+ */
 exports.deleteTradesWithoutDDJJ = (id) => {
     return new Promise((resolve, reject) => {
         const sql = `DELETE FROM comercio 
@@ -256,8 +261,6 @@ exports.deleteTradesWithoutDDJJ = (id) => {
         });
     });
 };
-
-
 
 // Función para respaldar los comercios antes de la eliminación
 exports.backupComercios = (id) => {

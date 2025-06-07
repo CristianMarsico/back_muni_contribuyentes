@@ -80,6 +80,13 @@ exports.editActive = async (id) => {
     return result.rows[0];
 };
 
+/**
+ * Actualiza el estado de "buen contribuyente" en la base de datos.
+ * 
+ * @param {number} id - ID del contribuyente.
+ * @param {boolean|string} newEstado - Nuevo estado (true o false).
+ * @returns {Promise<Object>} - Objeto con los datos actualizados.
+ */
 exports.editActiveGoodTaxpayer = async (id, newEstado) => {
     const query = `
         UPDATE CONTRIBUYENTE
@@ -126,6 +133,12 @@ exports.getWithTrade = (id) => {
     });
 };
 
+/**
+ * Elimina un contribuyente de la base de datos.
+ * 
+ * @param {number} id - ID del contribuyente.
+ * @returns {Promise<Object>} - Resultado de la eliminación (incluye rowCount).
+ */
 exports.deleteTaxpayer = (id) => {    
     return new Promise((resolve, reject) => {
         const sql = `DELETE 

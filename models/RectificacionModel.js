@@ -1,52 +1,24 @@
 "use strict";
 const { conn } = require('../dataBase/Connection.js');
 
-// /**
-//  * Servicio para rectificar una DDJJ en la base de datos.
-//  * 
-//  * Esta función realiza una actualización en la base de datos para cambiar el monto, la tasa calculada 
-//  * y establecer el estado de la DDJJ como rectificada. También se incluye una descripción detallada con 
-//  * el mes y la fecha de rectificación.
-//  * 
-//  * @param {string} id_taxpayer - El identificador del contribuyente.
-//  * @param {string} id_trade - El identificador del comercio.
-//  * @param {string} id_date - La fecha original de la DDJJ.
-//  * @param {number} monto - El nuevo monto de la DDJJ.
-//  * @param {number} tasa - La nueva tasa calculada.
-//  * @param {string} mes - El mes correspondiente a la rectificación.
-//  * @param {string} fechaRectificacion - Fecha de rectificación en formato `YYYY-MM-DD`.
-//  * @param {number} diferenciaDias - Cantidad de días entre la fecha original y la fecha de rectificación.
-//  * 
-//  * @returns {Object} - Resultado de la consulta de actualización, que contiene el número de filas afectadas.
-//  * 
-//  * @throws {Error} - Si ocurre un error durante la consulta, se lanza un mensaje de error.
-//  * 
-//  * @example
-//  * // Ejemplo de uso:
-//  * rectificar(id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion, diferenciaDias)
-//  *   .then(result => console.log(result))
-//  *   .catch(error => console.error(error));
-//  */
-// exports.rectificar = async (id_taxpayer, id_trade, id_date, monto, tasa, mes, fechaRectificacion) => {
-//     const query = `
-//         UPDATE DDJJ
-//         SET monto = $1, rectificada = $2, descripcion = $3, tasa_calculada = $4, cargada_en_tiempo =$5
-//         WHERE id_contribuyente = $6
-//             AND id_comercio = $7
-//             AND fecha = $8
-//         ;
-//     `;
-//     const values = [monto, true, `Rectificado mes de ${mes}. ${fechaRectificacion}`, tasa, false, id_taxpayer, id_trade, id_date];
-
-//     try {
-//         const result = await conn.query(query, values);
-//         return result;
-//     } catch (err) {
-//         throw new Error('Error en la base de datos');
-//     }
-// };
-
-
+/**
+ * Modelo para registrar una nueva rectificación en la base de datos.
+ * 
+ * Calcula la cantidad de rectificaciones previas y agrega una nueva rectificación con el número correspondiente.
+ * 
+ * @async
+ * @function
+ * @param {number} id_contribuyente - ID del contribuyente.
+ * @param {number} id_comercio - ID del comercio.
+ * @param {string} fecha - Fecha de la DDJJ original.
+ * @param {number} monto - Monto declarado.
+ * @param {number} tasa - Tasa calculada.
+ * @param {string} mes - Mes de la rectificación.
+ * @param {string} fechaRectificacion - Fecha de la rectificación.
+ * 
+ * @returns {Object} Objeto de la rectificación insertada.
+ * @throws {Error} Error al registrar la rectificación.
+ */
 exports.addRectificacion = async (id_contribuyente, id_comercio, fecha, monto, tasa, mes, fechaRectificacion) => {
     
     try {
@@ -87,26 +59,12 @@ exports.addRectificacion = async (id_contribuyente, id_comercio, fecha, monto, t
             cantidadRectificaciones
         ]);
 
-        // // Insertar notificación para administrador
-        // const notifQuery = `
-        //     INSERT INTO notificacion (leida, fecha, cuit, monto, codigo_comercio, mes)
-        //     VALUES ($1, $2, $3, $4, $5, $6)
-        // `;
-        // await conn.query(notifQuery, [            
-        //     false,
-        //     fechaRectificacion,
-        //     cuit,
-        //     monto,
-        //     cod_comercio,
-        //     mes
-        // ]);
         return result.rows[0];
     } catch (error) {
         console.error(error);
         throw new Error('Error al registrar la rectificación.');
     }
 };
-
 
 /**
  * Servicio para actualizar el estado 'enviada' de una rectificación a true.

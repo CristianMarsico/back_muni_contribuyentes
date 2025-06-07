@@ -37,6 +37,14 @@ module.exports = (io) => {
   */
   router.put("/taxpayer/:id", AuthMiddleware, (req, res) => editActive(req, res, io));
 
+  /**
+ * Ruta para actualizar el estado de "buen contribuyente" de un contribuyente.
+ *
+ * @route {PUT} /taxpayer/:id/goodTaxpayer
+ * @middleware {AuthMiddleware} - Verifica la autenticación del usuario.
+ * @param {number} id - ID del contribuyente.
+ * @body {boolean|string} newEstado - Nuevo estado del contribuyente.
+ */
   router.put("/taxpayer/:id/goodTaxpayer", AuthMiddleware, (req, res) => editGoodTaxpayer(req, res, io));
 
   /**
@@ -51,6 +59,14 @@ module.exports = (io) => {
   */
   router.get("/taxpayer/:id", AuthMiddleware, getWithTrade);
 
+  /**
+ * Ruta para eliminar un contribuyente.
+ *
+ * @route {DELETE} /taxpayer/:id
+ * @middleware {AuthMiddleware} - Verifica la autenticación del usuario.
+ * @middleware {UploadedDDJJ} - Verifica si el contribuyente tiene DDJJ cargadas.
+ * @param {number} id - ID del contribuyente a eliminar.
+ */
   router.delete("/taxpayer/:id", AuthMiddleware, UploadedDDJJ, (req, res) => deleteTaxpayer(req, res, io));
 
   return router;

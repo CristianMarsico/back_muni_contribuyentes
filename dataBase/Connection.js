@@ -168,11 +168,14 @@ const initializeDataConfigDefault = async () => {
  */
 const insertarDDJJFaltantes = async () => {
     try {
-        const { rows: config } = await conn.query("SELECT monto_defecto FROM configuracion LIMIT 1");
+        const { rows: config } = await conn.query("SELECT monto_defecto, porcentaje_buen_contribuyente FROM configuracion LIMIT 1");
         if (!config.length) throw new Error("No se encontró el monto_defecto en la configuración.");
 
+        const montoDefecto = parseFloat(config[0].monto_defecto);
+        const porcentajeBuenContribuyente = parseFloat(config[0].porcentaje_buen_contribuyente);
+        
         const { rows } = await conn.query(`
-           SELECT c.id_contribuyente, com.id_comercio
+           SELECT c.id_contribuyente, c.es_buen_contribuyente, com.id_comercio
             FROM contribuyente c
             JOIN comercio com
                 ON c.id_contribuyente = com.id_contribuyente
@@ -199,11 +202,16 @@ const insertarDDJJFaltantes = async () => {
         const today = new Date();
         const nombreMes = meses[(today.getMonth() - 1 + 12) % 12];
 
-        for (const { id_contribuyente, id_comercio } of rows) {
+        for (const { id_contribuyente, es_buen_contribuyente, id_comercio } of rows) {
+            let tasa_calculada = montoDefecto;           
+
+            if (es_buen_contribuyente) {
+                tasa_calculada = montoDefecto - (montoDefecto * porcentajeBuenContribuyente);  
+            }
             await conn.query(`
                 INSERT INTO ddjj (id_contribuyente, id_comercio, fecha, monto, descripcion, cargada_en_tiempo, tasa_calculada, cargada_rafam, rectificada)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            `, [id_contribuyente, id_comercio, today, 0, `Necesita Rectificar el mes de ${nombreMes}`, false, config[0].monto_defecto, false, false]);
+            `, [id_contribuyente, id_comercio, today, 0, `Necesita Rectificar el mes de ${nombreMes}`, false, tasa_calculada, false, false]);
         }
 
         return false;
